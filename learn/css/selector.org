@@ -1,0 +1,78 @@
+#+TITLE: Selectors
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+#+OPTIONS: toc:1
+
+* Pseudo-Classes/Pseudo-Elements
+
+  - =a:link=
+  - =a:visited=
+  - =a:hover=
+  - =a:active=
+  - =:first-line=, in CSS3: =::first-line=
+  - =:first-letter=, in CSS3: =::first-letter=
+  - =:focus=
+  - =:before=, =:after=  Add content before/after selected element
+    #+BEGIN_SRC css
+    .tip:before {content: "HOT TIP!" }
+    #+END_SRC
+
+* Attribute Selectors
+
+  #+BEGIN_SRC css
+  img[title] { border: none; }                   /* remove borders for all imgs with a title attr */
+  a[href="http://www.cnn.com"] { color: green; } /* =: exact match */
+  a[href^="ftp://"] { color: blue; }             /* ^=: begin with */
+  a[href$="*.pdf"] { font-weight: bold; }        /* $=: end with */
+  img[src*="logo"] { height: 20px; }             /* *=: contains */
+  #+END_SRC
+
+* Child Selectors
+
+  - =:first-child=, =:last-child=
+  - =:nth-child(odd)=, =:nth-child(even)=
+  - =:nth-child(1)=, selects first child
+  - =:nth-child(3n)=, selects 1st, 4th, 7th... children
+  - =:nth-child(4n+2)=, select 2nd, 6th, 10th... children
+  - =:nth-child(n+3)=, select all children after 2nd.
+  - =:nth-child(-n+3)=, select first 3 children
+  - =:only-child=, selects element that's the only child
+  - =:first-of-type=, =:last-of-type=, =:nth-of-type()=
+
+* Sibling Selectors
+
+  - =+=: =h2 + p= selects the =p= element that immediately follows =h2=
+  - =~=: =h2 ~ p= selects _all_ =p= elements that are siblings to =h2=
+
+* =:target=
+
+  Applies to element with an ID and the ID appears in URL's =#= part
+
+  #+BEGIN_SRC css
+  #signupForm {display: none; }           /* signupForm is hidden */
+  #signupForm:target { display: block; }  /* displays form only when urls contains #signupForm */
+  #+END_SRC
+
+* =:not()= The negation selector
+
+  #+BEGIN_SRC css
+  /* selects all http links that do not contain 'mysite.com' in url */
+  a[href^="http://"]:not([href*="mysite.com"]) {
+    color: green;
+  }
+  #+END_SRC
+
+
+** Limitation:
+
+  - Can only use once in a selector
+  - Only work with simple selectors:
+    - elements
+    - universal
+    - classes
+    - IDs
+    - pseudo-classes
+  - Does _NOT_ work with:
+    - Descendants
+    - pseudo-elements: =::first-line= etc
+    - group selectors
+    - combinators

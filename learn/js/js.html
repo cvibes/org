@@ -1,0 +1,944 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Javscript Notes</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="title" content="Javscript Notes"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2013-06-18T17:52-0400"/>
+<meta name="author" content="Xiaohui Lu"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<style>pre.src { width: 80%; margin: 0 auto; }</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+
+<div id="preamble">
+
+</div>
+
+<div id="content">
+<h1 class="title">Javscript Notes</h1>
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 Basics</a>
+<ul>
+<li><a href="#sec-1-1">1.1 Data types</a></li>
+<li><a href="#sec-1-2">1.2 prototype</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2 Functions</a>
+<ul>
+<li><a href="#sec-2-1">2.1 Invocation patterns</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3 Object Creation</a>
+<ul>
+<li><a href="#sec-3-1">3.1 Factory Pattern</a></li>
+<li><a href="#sec-3-2">3.2 Constructor Pattern</a></li>
+<li><a href="#sec-3-3">3.3 Prototype Pattern</a></li>
+<li><a href="#sec-3-4">3.4 Parasitic Constructor Pattern</a></li>
+<li><a href="#sec-3-5">3.5 Durable Constructor Pattern</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">4 Inheritance</a>
+<ul>
+<li><a href="#sec-4-1">4.1 Prototype chaining</a></li>
+<li><a href="#sec-4-2">4.2 Constructor stealing</a></li>
+<li><a href="#sec-4-3">4.3 Combination Inheritance a.k.a. Pseudoclassical Inheritance</a></li>
+<li><a href="#sec-4-4">4.4 Prototypal Inheritance</a></li>
+<li><a href="#sec-4-5">4.5 Parasitic Inheritance</a></li>
+<li><a href="#sec-4-6">4.6 Parasitic Combination Inheritance</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Basics</h2>
+<div class="outline-text-2" id="text-1">
+
+
+
+</div>
+
+<div id="outline-container-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Data types</h3>
+<div class="outline-text-3" id="text-1-1">
+
+
+</div>
+
+<div id="outline-container-1-1-1" class="outline-4">
+<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> Basic data types</h4>
+<div class="outline-text-4" id="text-1-1-1">
+
+<ul>
+<li>number
+</li>
+<li>string
+</li>
+<li>boolean
+</li>
+<li>null
+</li>
+<li>undefined
+</li>
+</ul>
+
+</div>
+
+</div>
+
+<div id="outline-container-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2"><span class="section-number-4">1.1.2</span> Everything else is an object</h4>
+<div class="outline-text-4" id="text-1-1-2">
+
+<ul>
+<li>null is an object too!
+</li>
+<li>functions are objects, but of type function
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">x</span> = <span style="color: #8ac6f2;">function</span> (){};
+<span style="color: #8ac6f2;">typeof</span> x; <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">"function"</span>
+</pre>
+
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> prototype</h3>
+<div class="outline-text-3" id="text-1-2">
+
+<ul>
+<li>functions have a prototype object
+</li>
+<li>regular objects has a secret to the prototype object of their constructor function. The links is established when the contructor function is called with new.
+</li>
+<li>Object literals are linked to Object.prototype, functions are linked to Function.prototype, which is linked to Object.prototype
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Functions</h2>
+<div class="outline-text-2" id="text-2">
+
+
+</div>
+
+<div id="outline-container-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Invocation patterns</h3>
+<div class="outline-text-3" id="text-2-1">
+
+<p>   In addition to the regular arguments, a function also receives two extra, implied arguments: <i>this</i> and <i>arguments</i>
+   How a function is invoked determines what <code>this</code> means.
+</p>
+
+</div>
+
+<div id="outline-container-2-1-1" class="outline-4">
+<h4 id="sec-2-1-1"><span class="section-number-4">2.1.1</span> Method Invocation Pattern</h4>
+<div class="outline-text-4" id="text-2-1-1">
+
+<ul>
+<li>When a function is stored as a property in an object, it's called a <i>method</i>.
+</li>
+<li>When a function is invoked by refinement ( . notation or [subscript] ), it's invoked as a method.
+</li>
+<li>When a function invoked as a method, <i>this</i> is bound to the object, binding happens at invocation time.
+</li>
+<li>Methods that get their object context from <i>this</i> are called <i>public methods</i>.
+</li>
+</ul>
+
+</div>
+
+</div>
+
+<div id="outline-container-2-1-2" class="outline-4">
+<h4 id="sec-2-1-2"><span class="section-number-4">2.1.2</span> Function Invocation Pattern</h4>
+<div class="outline-text-4" id="text-2-1-2">
+
+<ul>
+<li>Directly invoked, <i>this</i> is bound to the <i>global object</i>.
+</li>
+<li>Problem: inner function won't have access to <i>this</i> of outer function. Solution: define a variable (<i>that</i> by convention) and assign <i>this</i> to it in outer  function. Inner function have access to <i>that</i>.
+
+
+
+<pre class="src src-javascript">myObject.<span style="color: #cae682;">double</span> = <span style="color: #8ac6f2;">function</span> ( ){
+    <span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">that</span> = <span style="color: #e5786d;">this</span>;  <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">workaround</span>
+    <span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">helper</span> = <span style="color: #8ac6f2;">function</span> ( ){
+        that.value = add( that.value, that.value );
+    };
+    helper( );  <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">function invocation</span>
+};
+</pre>
+
+</li>
+</ul>
+
+</div>
+
+</div>
+
+<div id="outline-container-2-1-3" class="outline-4">
+<h4 id="sec-2-1-3"><span class="section-number-4">2.1.3</span> Constructor Invocation Pattern</h4>
+<div class="outline-text-4" id="text-2-1-3">
+
+<ul>
+<li>When invoked with the <code>new</code> operator, a function returns an object that has the secret link to the function's prototype object.
+</li>
+<li><i>this</i> is bound to the new object.
+</li>
+<li>Add methods to the function's prototype object will give public methods to created objects.
+</li>
+</ul>
+
+</div>
+
+</div>
+
+<div id="outline-container-2-1-4" class="outline-4">
+<h4 id="sec-2-1-4"><span class="section-number-4">2.1.4</span> Apply Invocation Pattern</h4>
+<div class="outline-text-4" id="text-2-1-4">
+
+<ul>
+<li><i>apply</i> can change function invocation context.
+</li>
+<li><i>apply</i> received two arguments: the first value will be bound to <i>this</i> in the function, the second is an array containing parameters.
+</li>
+</ul>
+
+
+
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Object Creation</h2>
+<div class="outline-text-2" id="text-3">
+
+
+</div>
+
+<div id="outline-container-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Factory Pattern</h3>
+<div class="outline-text-3" id="text-3-1">
+
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">someone</span> = createPerson(name, age){
+    <span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">person</span> = {
+        name: name,
+        age : age,
+        <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">sayHi</span> : <span style="color: #8ac6f2;">function</span>(){
+            alert(<span style="color: #e5786d;">this</span>.name + <span style="color: #95e454; font-style: italic;">" says Hi!"</span>);
+        }
+    };
+    <span style="color: #8ac6f2;">return</span> person;
+}
+</pre>
+
+
+<ul>
+<li>Pros:
+<ul>
+<li>Can create many similar objects
+</li>
+</ul>
+
+</li>
+<li>Cons:
+<ul>
+<li>No type identification.
+</li>
+<li>Methods are duplicate for each instance
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Constructor Pattern</h3>
+<div class="outline-text-3" id="text-3-2">
+
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">Person</span>(<span style="color: #8ac6f2;">name</span>, <span style="color: #8ac6f2;">age</span>){
+    <span style="color: #e5786d;">this</span>.name = name;
+    <span style="color: #e5786d;">this</span>.age  = age;
+    <span style="color: #e5786d;">this</span>.sayHi = <span style="color: #8ac6f2;">function</span>(){
+            alert(<span style="color: #e5786d;">this</span>.name + <span style="color: #95e454; font-style: italic;">" says Hi!"</span>);
+        }
+    };
+};
+
+<span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">someone</span> = <span style="color: #8ac6f2;">new</span> <span style="color: #cae682;">Person</span>(<span style="color: #95e454; font-style: italic;">'Jack'</span>, 20);
+
+</pre>
+
+
+<ul>
+<li>No explicit object creation or return.
+</li>
+<li>Properties and methods are assigened to <code>this</code>.
+</li>
+<li>Function name capitalized to indicate it's a constructor.
+</li>
+<li>Instances have a <code>constructor</code> property that points back to consturctor function.
+</li>
+<li>Pros
+<ul>
+<li><code>instanceof</code> operator works =&gt; correct type identification.
+</li>
+</ul>
+
+</li>
+<li>Cons
+<ul>
+<li>Methods are still duplicated for each instance.
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Prototype Pattern</h3>
+<div class="outline-text-3" id="text-3-3">
+
+
+
+</div>
+
+<div id="outline-container-3-3-1" class="outline-4">
+<h4 id="sec-3-3-1"><span class="section-number-4">3.3.1</span> Pure Prototype Pattern</h4>
+<div class="outline-text-4" id="text-3-3-1">
+
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">Person</span>(){}
+Person.<span style="color: #e5786d;">prototype</span>.name = <span style="color: #95e454; font-style: italic;">"Jack"</span>;
+Person.<span style="color: #e5786d;">prototype</span>.age  = 27;
+Person.Prorotype.sayHi = <span style="color: #8ac6f2;">function</span>(){ alert(<span style="color: #e5786d;">this</span>.name + <span style="color: #95e454; font-style: italic;">" says Hi!"</span>); };
+
+<span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">someone</span> = <span style="color: #8ac6f2;">new</span> <span style="color: #cae682;">Person</span>();
+</pre>
+
+
+<p>
+Alternative prototype specification:
+</p>
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">Person</span>(){}
+
+Person.prorotype = {
+    constructor : Person, <span style="color: #99968b; font-style: italic;">/* </span><span style="color: #99968b; font-style: italic;">Default prototype has this property.</span>
+<span style="color: #99968b; font-style: italic;">                           * If not set here, Person.prototype will not have correct constructor prop.</span>
+<span style="color: #99968b; font-style: italic;">                           * Main difference between this and above code.</span>
+<span style="color: #99968b; font-style: italic;">                           * constructor defined this way is enumerable, default is not, see code below.</span>
+<span style="color: #99968b; font-style: italic;">                           */</span>
+    name : <span style="color: #95e454; font-style: italic;">'Jack'</span>,
+    age  : 27,
+    <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">sayHi</span> : <span style="color: #8ac6f2;">function</span>(){ alert(<span style="color: #e5786d;">this</span>.name + <span style="color: #95e454; font-style: italic;">" says Hi!"</span>); }
+}
+</pre>
+
+
+<p>
+Prototype specification with not enumerable constructor property:
+</p>
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">Person</span>(){}
+<span style="color: #cae682;">Person</span>.<span style="color: #e5786d;">prototype</span> = {
+    name : <span style="color: #95e454; font-style: italic;">'Jack'</span>,
+    age  : 27,
+    <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">sayHi</span> : <span style="color: #8ac6f2;">function</span> (){alert(<span style="color: #e5786d;">this</span>.name + <span style="color: #95e454; font-style: italic;">" says Hi!"</span>);}
+}
+
+<span style="color: #99968b; font-style: italic;">//</span><span style="color: #99968b; font-style: italic;">ECMAScript 5 only! - restore the constructor</span>
+Object.defineProperty(Person.<span style="color: #e5786d;">prototype</span>, <span style="color: #95e454; font-style: italic;">"constructor"</span>, {
+    enumerable : <span style="color: #e5786d;">false</span>,
+    value: Person
+});
+</pre>
+
+
+<ul>
+<li>Most important feature of Javascript.
+</li>
+<li>Instances will share properties in prototype unless overwritten by instance properties.
+</li>
+<li>Constructor function has to be called with <code>new</code> operator.
+</li>
+<li>Instances created this way has internal <span style="text-decoration:underline;">[ [prototype ] ]</span> property referring to constructor's <code>prototype</code> object.
+</li>
+<li><code>isPrototypeOf()</code> can be used to determin if an prorotype object is the prorotype of an instance.
+</li>
+<li><code>Object.getProrotypeOf(obj)</code> can be used to get prototype of <code>obj</code>.
+</li>
+<li><code>in</code> operator can be used to determine if a property can be accessed on an object, whether it's an instance property or prototype property.
+</li>
+<li>Instance method <code>hasOwnProperty()</code> can be used to filter instance properties from prototype properties.
+</li>
+<li><code>Object.keys()</code> can be used to get all <b>enumerable</b>, <b>instance</b> properties of an object.
+</li>
+<li>Pros:
+<ul>
+<li>Efficient properties/methods sharing.
+</li>
+<li>Easy to have instance properties/methods, just overwrite.
+</li>
+</ul>
+
+</li>
+<li>Cons:
+<ul>
+<li>Reference types of properties may be shared in undesired ways.
+</li>
+<li>Pure Prototype Pattern won't be able to customize instances by passing arguments.
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-3-2" class="outline-4">
+<h4 id="sec-3-3-2"><span class="section-number-4">3.3.2</span> Combination Constructor/Prototype Pattern</h4>
+<div class="outline-text-4" id="text-3-3-2">
+
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">Person</span>(<span style="color: #8ac6f2;">name</span>, <span style="color: #8ac6f2;">age</span>){
+    <span style="color: #e5786d;">this</span>.name = name;
+    <span style="color: #e5786d;">this</span>.age  = age;
+}
+
+Person.<span style="color: #e5786d;">prototype</span>.sayHi = <span style="color: #8ac6f2;">function</span>(){ alert(<span style="color: #e5786d;">this</span>.name + <span style="color: #95e454; font-style: italic;">" says Hi!"</span>); }
+
+<span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">someone</span> = <span style="color: #8ac6f2;">new</span> <span style="color: #cae682;">Person</span>(<span style="color: #95e454; font-style: italic;">'Jack'</span>, 27);
+</pre>
+
+
+<ul>
+<li>Instance properties are defined solely in constructor.
+</li>
+<li>Shared properties/methods are defined in constructor's prototype.
+</li>
+<li>Default pattern to use for defining reference types.
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-3-3" class="outline-4">
+<h4 id="sec-3-3-3"><span class="section-number-4">3.3.3</span> Dynamic Prototype Pattern</h4>
+<div class="outline-text-4" id="text-3-3-3">
+
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">Person</span>(<span style="color: #8ac6f2;">name</span>, <span style="color: #8ac6f2;">age</span>){
+    <span style="color: #e5786d;">this</span>.name = name;
+    <span style="color: #e5786d;">this</span>.age  = age;
+    <span style="color: #8ac6f2;">if</span> ( <span style="color: #8ac6f2;">typeof</span> <span style="color: #e5786d;">this</span>.sayHi !== <span style="color: #95e454; font-style: italic;">'function'</span>){  <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">only executes on first time</span>
+        Person.<span style="color: #e5786d;">prototype</span>.sayHi() = <span style="color: #8ac6f2;">function</span>(){alert(<span style="color: #e5786d;">this</span>.name + <span style="color: #95e454; font-style: italic;">" says Hi!"</span>); }
+    }
+}
+</pre>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3-4" class="outline-3">
+<h3 id="sec-3-4"><span class="section-number-3">3.4</span> Parasitic Constructor Pattern</h3>
+<div class="outline-text-3" id="text-3-4">
+
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">Person</span>(<span style="color: #8ac6f2;">name</span>, <span style="color: #8ac6f2;">age</span>){
+    <span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">o</span> = <span style="color: #8ac6f2;">new</span> <span style="color: #cae682;">Object</span>();
+    o.name = name;
+    o.age = age;
+    o.sayHi = <span style="color: #8ac6f2;">function</span>(){alert(<span style="color: #e5786d;">this</span>.name + <span style="color: #95e454; font-style: italic;">" says Hi!"</span>);}
+
+    <span style="color: #8ac6f2;">return</span> o;
+}
+</pre>
+
+
+<ul>
+<li>Create a constructor that simply wraps creation and return another object.
+</li>
+<li>Factory Pattern that looks like Constructor Pattern.
+</li>
+<li>Uses <code>new</code> in function call but doesn't create link between object and constructor's prototype.
+</li>
+<li>Uses <code>return</code> to explicitly return object.
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-5" class="outline-3">
+<h3 id="sec-3-5"><span class="section-number-3">3.5</span> Durable Constructor Pattern</h3>
+<div class="outline-text-3" id="text-3-5">
+
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">Person</span>(<span style="color: #8ac6f2;">name</span>, <span style="color: #8ac6f2;">age</span>){
+    <span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">o</span> = <span style="color: #8ac6f2;">new</span> <span style="color: #cae682;">Object</span>();
+    <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">optionally define private properties/methods here</span>
+
+    <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">attach methods</span>
+    o.sayHi = <span style="color: #8ac6f2;">function</span>(){ alert(name + <span style="color: #95e454; font-style: italic;">" says Hi!"</span>) }; <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">NOT 'this.name'!!!</span>
+    o.getAge = <span style="color: #8ac6f2;">function</span>(){ <span style="color: #8ac6f2;">return</span> age; }
+    <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">return object  </span>
+    <span style="color: #8ac6f2;">return</span> o;
+}
+
+<span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">someone</span> = Person(<span style="color: #95e454; font-style: italic;">'Jack'</span>, 27);
+someone.sayHi(); <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">Jack says Hi!</span>
+</pre>
+
+
+<ul>
+<li>Looks like Factory pattern but quite different.
+</li>
+<li>No way to access <code>name</code>, <code>age</code> directly from returned instance object.
+</li>
+<li>Constructor is <b>not</b> called with <code>new</code>.
+</li>
+<li>Useful when dealing with secure execution environments.
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Inheritance</h2>
+<div class="outline-text-2" id="text-4">
+
+
+
+</div>
+
+<div id="outline-container-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Prototype chaining</h3>
+<div class="outline-text-3" id="text-4-1">
+
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">SuperType</span>(){
+    <span style="color: #e5786d;">this</span>.superProperty = <span style="color: #e5786d;">true</span>;
+}
+SuperType.<span style="color: #e5786d;">prototype</span>.getSuperProperty = <span style="color: #8ac6f2;">function</span>(){ <span style="color: #8ac6f2;">return</span> <span style="color: #e5786d;">this</span>.superProperty; }
+
+<span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">SubType</span>(){
+    <span style="color: #e5786d;">this</span>.subProperty = <span style="color: #e5786d;">false</span>;
+}
+SubType.<span style="color: #e5786d;">prototype</span>.getSubProperty = <span style="color: #8ac6f2;">function</span>(){ <span style="color: #8ac6f2;">return</span> <span style="color: #e5786d;">this</span>.subProperty; }
+
+<span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">obj</span> = <span style="color: #8ac6f2;">new</span> <span style="color: #cae682;">SubType</span>();
+obj.getSuperProperty(); <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">true</span>
+obj.getSubProperty();   <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">false</span>
+</pre>
+
+
+<ul>
+<li><code>SubType.prototype</code> is an SuperType instance which has its [ [prototype] ] linked to <code>SuperType.prototype</code>.
+</li>
+<li>SubType instances have their [ [prototype ] ] linked to <code>SubType.prototype</code> which is linked to <code>SuperType.prototype</code>.
+</li>
+<li>SubType instances have access to all properties/methods defined in <code>Subtype.prototype</code> <b>and</b> <code>SuperType.prototype</code>.
+</li>
+<li>All reference types inherit from <code>Object.prototype</code>
+</li>
+<li>Cons:
+<ul>
+<li>Undesired shared reference properties can happen.
+</li>
+<li>No way to pass arguments to supertype constructor.
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-2" class="outline-3">
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> Constructor stealing</h3>
+<div class="outline-text-3" id="text-4-2">
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">SuperType</span>(<span style="color: #8ac6f2;">name</span>){
+    <span style="color: #e5786d;">this</span>.name = name;
+}
+
+<span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">SubType</span>(<span style="color: #8ac6f2;">name</span>, <span style="color: #8ac6f2;">age</span>){
+    SuperType.call(name);
+    <span style="color: #e5786d;">this</span>.age = age;
+}
+
+<span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">obj</span> = <span style="color: #8ac6f2;">new</span> <span style="color: #cae682;">SubType</span>(<span style="color: #95e454; font-style: italic;">'Jack'</span>, 27);
+obj.name; <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">Jack</span>
+obj.age;  <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">27</span>
+</pre>
+
+
+<ul>
+<li>Call the supertype constructor from within the subtype constructor.
+</li>
+<li>Use <code>call()</code> or <code>apply()</code> to change execution context to newly created object.
+</li>
+<li>Arguments can be passed too.
+</li>
+<li>Cons:
+<ul>
+<li>Pure constructor stealing cannot share methods in supertype's prototype.
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-3" class="outline-3">
+<h3 id="sec-4-3"><span class="section-number-3">4.3</span> Combination Inheritance a.k.a. Pseudoclassical Inheritance</h3>
+<div class="outline-text-3" id="text-4-3">
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">SuperType</span>(<span style="color: #8ac6f2;">name</span>){
+    <span style="color: #e5786d;">this</span>.name = name;
+}
+<span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">define SuperType methods</span>
+SuperType.<span style="color: #e5786d;">prototype</span>.sayName = <span style="color: #8ac6f2;">function</span>(){alert(<span style="color: #95e454; font-style: italic;">"My name is "</span> + <span style="color: #e5786d;">this</span>.name);};
+
+<span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">SubType</span>(<span style="color: #8ac6f2;">name</span>, <span style="color: #8ac6f2;">age</span>){
+    SuperType.call(<span style="color: #e5786d;">this</span>, name);
+    <span style="color: #e5786d;">this</span>.age = age;
+}
+<span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">inherit from SuperType</span>
+SubType.<span style="color: #e5786d;">prototype</span> = <span style="color: #8ac6f2;">new</span> <span style="color: #cae682;">SuperType</span>();
+<span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">Define more methods for SubType</span>
+SubType.<span style="color: #e5786d;">prototype</span>.sayAge = <span style="color: #8ac6f2;">function</span>(){alert(<span style="color: #95e454; font-style: italic;">"I'm "</span> + <span style="color: #e5786d;">this</span>.age + <span style="color: #95e454; font-style: italic;">" years old."</span>);};
+
+<span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">obj</span> = <span style="color: #8ac6f2;">new</span> <span style="color: #cae682;">SubType</span>(<span style="color: #95e454; font-style: italic;">'Jack'</span>, 27);
+obj.sayName(); <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">My name is Jack</span>
+obj.sayAge();  <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">I'm 27 years old.</span>
+</pre>
+
+
+<ul>
+<li>Most frequently used inheritance pattern.
+</li>
+<li>Preserves behavior of <code>instanceof</code> and <code>isPrototypeOf()</code>
+</li>
+<li>Cons:
+<ul>
+<li>Supertype constructor called twice: once to create prototype for subtype, and again called in subtype's constructor.
+</li>
+<li>Properties defined in subtype's prototype (instance of supertype) are masked by instance properties defined in constructor calls.
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-4" class="outline-3">
+<h3 id="sec-4-4"><span class="section-number-3">4.4</span> Prototypal Inheritance</h3>
+<div class="outline-text-3" id="text-4-4">
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">beget</span>(<span style="color: #8ac6f2;">o</span>){
+    <span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">F</span>(){};
+    F.<span style="color: #e5786d;">prototype</span> = o;
+    <span style="color: #8ac6f2;">return</span> <span style="color: #8ac6f2;">new</span> <span style="color: #cae682;">F</span>();
+}
+
+<span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">me</span> = {
+    name: <span style="color: #95e454; font-style: italic;">"Jack"</span>,
+    <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">sayHi</span>: <span style="color: #8ac6f2;">function</span>(){alert(<span style="color: #e5786d;">this</span>.name + <span style="color: #95e454; font-style: italic;">" says Hi"</span>);}
+};
+
+<span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">other</span> = beget(me);
+other.sayHi(); <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">'Jack says Hi!'</span>
+other.name = <span style="color: #95e454; font-style: italic;">'Joe'</span>;
+other.sayHi(); <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">'Joe says Hi!'</span>
+</pre>
+
+
+<ul>
+<li>Direct object inheritance: inherit properties/methods from another object.
+</li>
+<li>Implemented as ECMAScript 5's <code>Object.create()</code>.
+</li>
+<li>Useful when there's no need for overhead of creating separate constructors but need an object to behave similarly to another.
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-5" class="outline-3">
+<h3 id="sec-4-5"><span class="section-number-3">4.5</span> Parasitic Inheritance</h3>
+<div class="outline-text-3" id="text-4-5">
+
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">createAnother</span>(<span style="color: #8ac6f2;">original</span>){
+    <span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">another</span> = Object.create(original);
+    another.doSomething = <span style="color: #8ac6f2;">function</span>(){ alert(<span style="color: #95e454; font-style: italic;">"does something"</span>);};
+
+    <span style="color: #8ac6f2;">return</span> another;
+}
+</pre>
+
+
+<ul>
+<li>Use Prototype Inheritance to create similar objects from existin object.
+</li>
+<li>Add new methods/properties.
+</li>
+<li>No code reuse.
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-6" class="outline-3">
+<h3 id="sec-4-6"><span class="section-number-3">4.6</span> Parasitic Combination Inheritance</h3>
+<div class="outline-text-3" id="text-4-6">
+
+
+
+
+
+<pre class="src src-javascript"><span style="color: #8ac6f2;">function</span> <span style="color: #ad7fa8; font-weight: bold; font-style: italic;">inheritPrototype</span>(<span style="color: #8ac6f2;">subtype</span>, <span style="color: #8ac6f2;">supertype</span>){
+    <span style="color: #8ac6f2;">var</span> <span style="color: #8ac6f2;">proto</span> = Object.create(supertype.<span style="color: #e5786d;">prototype</span>);
+    proto.constructor = subtype;
+    subtype.<span style="color: #e5786d;">prototype</span> = proto;
+}
+
+inheritPrototype(SubType, SuperType); <span style="color: #99968b; font-style: italic;">// </span><span style="color: #99968b; font-style: italic;">replace SubType.prototype = new SuperType();</span>
+</pre>
+
+
+<ul>
+<li>Considered the most optimal inheritance paradigm.
+</li>
+<li>Supertype's constructor called only once.
+</li>
+<li>No duplicate properties in instance and prototype.
+</li>
+<li>Prototype chain is kept intact.
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+</div>
+
+<div id="postamble">
+<p class="date">Date: 2013-06-18T17:52-0400</p>
+<p class="author">Author: Xiaohui Lu</p>
+<p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
+<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
+
+</div>
+</body>
+</html>

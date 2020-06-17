@@ -1,0 +1,226 @@
+#+TITLE: Basic Data Structures
+
+* Iteration
+
+To use Java's iteration idiom for collections, the collection must implement
+the =Iterable= interface. =Iterable= is included in =java.lang=. The =Iterable=
+interface has on =iterator()= method that returns an =Iterator= object. =Iterable=
+is an interface included in =java.util= and must be imported.
+
+#+BEGIN_SRC java
+
+/*
+ * This is the idiom to loop over each element in a collection.
+ */
+for (String s : collection){
+    System.out.println(s);
+}
+
+/*
+ * It's a syntax sugar for the following code:
+ */
+Iterator i = collection.iterator();
+while ( i.hasNext() ){
+    String s = i.next();
+    System.out.println(s);
+}
+
+/*
+ * To be able to use the idiom, a collection must implement the
+ * <code: Iterable> interface, which must include an <code: iterator()>
+ * method that returns an <code: Iterator<Item>> object.
+ */
+import java.util.Iterator;
+public class MyCollection extends Iterable<Item>
+{
+    Iterator<Item> iterator()
+    {
+        return new MyIterator<item>();
+    }
+
+    /*
+     * <code: Iterator<item>> interface include three methods:
+     * boolean <code: hasNext()>, Item <code: next()> and void <code: remove()>
+     */
+    private class MyIterator implements Iterator<Item>
+    {
+        boolean hasNext(){
+            //...
+        }
+
+        Item next(){
+            // ...
+        }
+
+        void remove() {}
+    }
+}
+#+END_SRC
+
+* Bags, Queues, Stacks
+
+** Resizing Array
+
+#+BEGIN_SRC java
+private void resize(max)     // N <= max
+{
+    /*
+     * Java does NOT support creating array of generic type: new Item[max]
+     * We have to create an array of Objects and cast into Item array
+     */
+    Item[] temp = (Item[]) new Object[max];
+    for (int i = 0; i < N; i++) temp[i] = a[i];   // copy existing items
+    a = temp;
+}
+
+public void push(Item item)
+{
+    if ( N == a.length ) resize( 2 * a.length );  // if full, double size
+    a[N++] = item;
+}
+
+public Item pop()
+{
+    Item item = a[--N];
+    /*
+     * Avoid Loitering
+     * If not explicitly setting the reference to this item in the array to null,
+     * the reference will remain in the array and never be garbage-collected, "orphaned".
+     */
+    a[N] = null;
+
+    // If total items are less than one-fourth of the array size, halve the size of array
+    if ( N > 0 && N == a.length / 4 ) resize(a.length / 2);
+    return item;
+}
+#+END_SRC
+
+** Linked List
+
+*** Stack
+
+#+BEGIN_SRC java
+/**
+ * Algorithm 1.2: Pushdown stack using linked list
+ */
+public class Stack<Item>
+{
+    private Node first;  // top of stack
+    private int N;       // number of items
+
+    private class Node
+    {  // nested class to define nodes
+      Item item;
+      Node next;
+    }
+
+    public boolean isEmpty()  { return  first == null; };
+
+    public int size() { return N; }
+
+    public void push(Item item)
+    {   //Add item to top of stack
+        Node oldfirst = first;
+        first = new Node();
+        first.item = item;
+        first.next = oldfirst;
+        N++;
+    }
+
+    public Item pop()
+    {   //Remove item from top of stack
+        Item item = first.item;
+        first = first.next;
+        N--;
+        return item;
+    }
+}
+#+END_SRC
+
+*** Queue
+
+#+BEGIN_SRC java
+/**
+ * Algorithm 1.3: FIFO Queue
+ */
+public class Queue<Item>
+{
+    private Node first;
+    private Node last;;
+    private int N;
+
+    private class Node
+    {
+        Item item;
+        Node next;
+    }
+
+    public boolean isEmpty() { return first == null; }
+    public int size() { return N; }
+
+    public void enqueue(Item item)
+    {
+        Node oldlast = last;
+        last = new Node();
+        last.item = item;
+        last.next = null;
+        if ( isEmpty() ) first = last;
+        else             oldlast.next = last;
+        N++;
+    }
+
+    public Item dequeue()
+    {
+        Item item = first.item;
+        first = first.next;
+        N--;
+        if ( isEmpty() ) last = null;
+        return item;
+    }
+}
+#+END_SRC
+
+*** Bag
+
+#+BEGIN_SRC java
+/**
+ * Algorithm 1.4 Bag
+ */
+
+public class Bag<Item> implements Iterable<Item>
+{
+    private Node first;
+    private class Node
+    {
+        Item item;
+        Node next;
+    }
+
+    public void add(Item item)
+    {
+        Node oldfirst = first;
+        first = new Node();
+        first.item = item;
+        first.next = oldfirst;
+    }
+
+    public Iterator<Item> iterator()
+    {
+        return new ListIterator();
+    }
+
+    private class ListIterator implements Iterator<Item>
+    {
+        private Node current = first;
+        public boolean hasNext() { return current != null; }
+        public void remvoe() {}
+
+        public Item next()
+        {
+            Item item = current.item;
+            current = current.next;
+            return item;
+        }
+    }
+}
+#+END_SRC

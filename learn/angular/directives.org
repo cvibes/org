@@ -1,0 +1,340 @@
+#+TITLE: Directives
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+#+OPTIONS: toc:1
+
+A directive is a rule for defining how your UI interacts with data binding. It 
+defines how the associated element interacts with its corresponding scope.
+
+Controllers provide an API by attaching functions and variables to a scope, and
+directives defines how the API should be used to create user experience.
+
+Directives expose core AngularJS functionality such as event handling, form
+validation, and templates. 
+
+Custom Directives are used to apply application features to views. A directive is
+a factory function that returns a link function or a config object that contains
+a link function.  The factory function can take DI for use in link function.  The
+link function is run every time a directive is used, it takes scope, element and 
+attributes as its arguments.
+
+* Applying Directives
+
+  Directives can be applied in one of four ways, listed below. Class and comment should
+  be avoided if possible.
+
+  1. _A_, attribute 
+
+     #+BEGIN_SRC html
+     <span ng-bind="model.data"></span>
+     #+END_SRC
+
+  2.  _C_, class
+
+     #+BEGIN_SRC html
+     <span class="ng-bind:model.data"></span>
+     #+END_SRC
+
+  3.  _E_, element: only some directives
+     #+BEGIN_SRC html
+     <ng-include src="'part1.html'"></ng-include>
+     #+END_SRC
+
+  4. _M_, comment
+     #+BEGIN_SRC html
+        <!-- directive: unordered-list products -->
+     #+END_SRC  
+* Data binding
+
+** One-way binding
+
+   1. In-line binding:  ={{= =}}=
+      #+BEGIN_SRC html
+      There are {{model.number}} items.
+      #+END_SRC
+
+   2. =ng-bind= directive. _A, C_ Single data binding, only from =$scope=.
+      #+BEGIN_SRC html
+      There are <span ng-bind="model.number"></span> items.
+      #+END_SRC
+
+   3. =ng-bind-template= directive. _A, C_ Multiple data binding.
+      #+BEGIN_SRC html
+      <div ng-bind-template="First {{todo[0].action}}, then: {{todo[1].action}}"></div>
+      #+END_SRC
+   
+   4. =ng-non-bindable= directive. _A, C_ Prevents the region it's been applied to from inline binding.
+      #+BEGIN_SRC html
+      <div ng-non-bindable>Angular JS uses {{ and }} for templates.</div>
+      #+END_SRC
+      
+** Two-way binding
+
+   * Use =ng-model= directive. _A, C_
+   * Can only be applied to elements that allow users to provide a value: =input=, =textarea=, =select=
+
+* Template directives
+
+** =ng-repeat=, _A, C_
+
+   - Enumerate over array
+      #+BEGIN_SRC html
+      <tr ng-repeat="item in model.todos">
+         <td>{{item.action}}</td> 
+         <td>{{item.done}}</td>
+      </tr>
+      #+END_SRC
+
+   - Enumerate over object properties
+      #+BEGIN_SRC html
+      <td ng-repeat="prop in item">{{prop}}</td>
+      #+END_SRC
+
+   - Enumerate with key/value pair
+     #+BEGIN_SRC html
+     <td ng-repeat="(key,val) in item">{{key}} = {{val}}</td>
+     #+END_SRC
+
+   - Built-in variables
+     | =$index=  | Position of current obj/prop                                         |
+     | =$first=  | returns true if current obj is first in collection                   |
+     | =$last=   | .............................  last  ............                    |
+     | =$middle= | returns true if current obje in neither first nor last in collection |
+     | =$even=   | returns true for even-numbered obj in collection                     |
+     | =$odd=    | ....... .... ... odd ......... ... .. ...........                    |
+
+   - Repeating top-level elements using =ng-repeat-start= and =ng-repeat-end=. Following example repeats 3 =tr= elements for each =item=.
+     #+BEGIN_SRC html
+     <tr ng-repeat-start="item in todos"><td>{{$index}}</td></tr>
+     <tr><td>{{item.action}}</td></tr>
+     <tr ng-repeat-end><td>{{item.complete}}</td></tr>
+     #+END_SRC
+
+** =ng-include=: partial views. _A, C, E_
+
+   - Retrieves a fragment of html from server, compiles and inserts into DOM.
+     #+BEGIN_SRC html
+     <h2>See table below</h2>
+     <ng-include src="'table.html'"></ng-include>
+     #+END_SRC
+
+     - must use open/close tag
+     - =src= attr is evaluated as a JS exp, must be quoted for literal URL.
+     - can use JS exp in =src= attr to dynamically select partial view.
+
+   - Can be used as attribute:
+     #+BEGIN_SRC html
+     <div ng-include="viewFile()" onload="reportChange()"></div>
+     #+END_SRC
+
+** =ng-switch=: _A, E_ Conditionally swapping elements.
+
+   #+BEGIN_SRC html
+   <div ng-switch on="data.mode">
+     <div ng-switch-when="table">
+       <table><tr ng-repeat="item in data.items">...</tr></table>
+     </div>
+     <div ng-switch-when="list">
+       <ol><li ng-repeat="item in data.items">...</li></ol>
+     </div>
+     <div ng-switch-default>
+       Select a mode to view
+     </div>
+   </div>
+   #+END_SRC
+
+* Element directives
+** =ng-show=, =ng-hide= _A, C_ Conditionally show/hide elements.
+   #+BEGIN_SRC html
+   <span ng-hide="item.complete">Incomplete</span>
+   #+END_SRC
+
+** =ng-if= _A_  Conditionally remove elements.
+
+** =ng-class=, =ng-style=
+
+* Event directives
+
+=ng-click=, =ng-blur=, =ng-mouseover=.....
+
+* Form directives
+
+* Custom Directives
+
+  Basics:
+
+  #+BEGIN_SRC javascript
+    angular.module("myApp", [])
+        .directive("expDirective", function(){
+            return function(scope, element, attrs){
+               // do something
+            };
+         });
+  #+END_SRC
+
+  Advanced:
+
+  #+BEGIN_SRC javascript
+    angular.module("myApp", [])
+        .directive("expDirective", function(){
+            return {
+                link: function(scope, element, attrs){
+                          // do something
+                      },
+                restrict: "EMCA",
+                scope: true
+            };
+        });
+  #+END_SRC
+
+** =jqLite= functions
+
+  | DOM navigation |                                              |
+  |----------------+----------------------------------------------|
+  | children()     | does not support selectors feature of jQuery |
+  | eq(index)      | get element at index in a collection         |
+  | find(tag)      | get all descendant elements with tag name    |
+  | next()         | get next sibling element                     |
+  | parent()       | get parent element                           |
+
+  | modifying elements |                                                        |
+  |--------------------+--------------------------------------------------------|
+  | addClass(name)     | add all elements in jqLite obj to class                |
+  | removeClass(name)  | remove ......                                          |
+  | toggleClass(name)  | toggle class membership for all elements               |
+  | hasClass(name)     | returns true if any element in obj has class           |
+  | attr(name)         | get value of attribute for first element in jqLite obj |
+  | attr(name, val)    | set attr to val for first element in obj               |
+  | prop(name)         | get property value from first element in obj           |
+  | prop(name, val)    | set property to val for all elements in obj            |
+  | removeAttr(name)   | remove attr from all elements in obj                   |
+  | css(name)          | get value of CSS property from first element           |
+  | css(name, val)     | set CSS property to val for all elements in obj        |
+  | text()             | get concatenated text content from all elements        |
+  | text(val)          | set text content for all elements                      |
+  | val()              | get value attribute for first element                  |
+  | val(value)         | set value attribute for all elements                   |
+
+  | DOM operations        |                                                                                          |
+  |-----------------------+------------------------------------------------------------------------------------------|
+  | angular.element(html) | create jqLite element obj                                                                |
+  | after(elements)       | insert content after element on which the method is called                               |
+  | append(elements)      | insert elements as last child of each element in obj on which the method has been called |
+  | prepend(elements)     | ....  ....      first child .......                                                      |
+  | clone()               | return a new jqLite obj that's a duplicate from the obj                                  |
+  | remove()              | remove elements in the jqLite obj from DOM                                               |
+  | replaceWith(elements) | replaces elements in jqLite obj on which the method is called with specified elements    |
+  | wrap(elements)        | wraps each element in jqLite obj with specified elements                                 |
+
+  | events                |                                                                                            |
+  |-----------------------+--------------------------------------------------------------------------------------------|
+  | on(events, handler)   | registers a handler for on or more events emitted by elements represented by jqLite object |
+  | off(events, handler)  | removes previously registered handler for specified events                                 |
+  | triggerHandler(event) | triggers all handlers for specified event                                                  |
+
+  | misc            |                                                                        |
+  |-----------------+------------------------------------------------------------------------|
+  | data(key)       | returns value associated with key                                      |
+  | data(key,val)   | set key/value pair                                                     |
+  | removeDate(key) | delete key/value pair                                                  |
+  | html()          | returns html representation of content of the first element in obj     |
+  | ready(handler)  | register handler, which is called when content of DOM are fully loaded |
+
+  
+** Link function
+
+   Link function, which is returned from the factory function in directive definition, provides link between html element and data in scope.
+
+   Factory function can also return an object, and its =link= property should be the link function.
+
+   #+BEGIN_SRC javascript
+       angular.module("myApp", [])
+              .controller("simpleCtrl", function($scope){
+                   $scope.products = [ { name: "apple", price: 2.20 },
+                                       { name: "pear", price: 3.20 },
+                                       { name: "orange", price: 4.50}
+                                     ];
+               })
+              .directive("unorderedList", function(){
+                   return function(scope, element, attrs){
+                       var data = scope[attrs["unorderedList"]];
+                       var propertyExpression = attrs["listProperty"];
+
+                       if(angular.isArray(data)){
+                           var listElem = angular.element("<ul>");
+                           element.append(listElem);
+                           for(var i = 0; i < data.length; i++){
+                               (function(){
+                                   var itemElem = angular.element("<li>");
+                                   listElem.append(itemElem);
+                                   var index = i;
+                                   var watcherFn = function(watchScope){
+                                       return watchScope.$eval(propertyExpression, data[index]);
+                                   };
+                                   scope.$watch(watcherFn, function(newVal, oldVal){
+                                       itemElem.text(newVal);
+                                   });
+                                })();
+                           }
+                        }
+                    };
+                });
+
+    #+END_SRC
+
+    #+BEGIN_SRC html
+       <div unordered-list="products" list-property="price | currency"></div>
+    #+END_SRC
+
+    * =scope=, =element=, =attrs= are passed as regular argument, not injected in as service.
+    * Names follow JS convention (camel case), in HTML names are converted to HTML convention (hyphenized).
+    * IIFE used to avoid closure side effects.
+    * Define watcher function to watch over changes on scope.
+    * =$watch= calls handler funciton when value returned by watcher function changes, HTML change only happens in handler function.
+    * =$eval= used to evaluate expressions.
+
+** Scope
+
+    * By default the directive receives scope from the controller that manages the view on which the directive is applied.
+    * To enable a scope on the directive itself, use =scope: true= in definition.
+      * This scope inherits from managing controller's scope.
+      * Each applied directive has its own scope, separate from each other.
+    * To enable isolated scope, use =scope: {}= in definition.
+      * This scope is totally independent from controller scope and other directives.
+      * To get data from controller, use one-way binding on an attribute.
+        #+BEGIN_SRC javascript
+          angular.module("myApp", [])
+              .directive("myDirective", function(){
+                  return {
+                      template: "<p>data value: {{ local }}</p>",
+                      scope: { local: "@nameprop"}
+                  };
+               });
+        #+END_SRC
+
+        #+BEGIN_SRC html
+        <input ng-model="data.name" />
+        <div myDirective nameprop="{{data.name}}"></div>
+        #+END_SRC
+
+        * in this example, attribute =nameprop= is bound with =data.name= in controller
+          scope.
+        * by declaring =local:@nameprop= in =scope=, it effectively declares an one-way
+          binding from controller's =data.name= to local scope's =local=.
+        * change to controller scope's =data.name= will affect directive scope's =local=, 
+          but not the other way around.
+
+      * To get/set data in controller scope from directive, use two-way binding:
+ 
+        #+BEGIN_SRC javascript
+          angular.module("myApp", [])
+              .directive("myDirective", funciton(){
+                  return {
+                      template: "<p>data value: {{local}}</p>",
+                      scope: { local: "=nameprop" }
+                  }
+              });
+        #+END_SRC
+
+        * by using "=\=nameprop=" instead of =@nameprop=, data bindging is changed 
+          from one-way to two-way.
+        * attribute value of =nameprop= is bound to the local declaration.

@@ -1,0 +1,96 @@
+#+TITLE: Overview
+
+* Commands
+
+| add      | Add file contents to the index                                  |
+| bisect   | Find the change that introduced a bug by binary search          |
+| branch   | List, create, or delete branches                                |
+| checkout | Checkout and switch to a branch                                 |
+| clone    | Clone a repo into a new directory                               |
+| commit   | Record changes to the repo                                      |
+| diff     | Show changes between commits, the commit and working trees, etc |
+| fetch    | Download objects and refs from another repo                     |
+| grep     | Print lines matching a pattern                                  |
+| init     | Create an empty git repo, or reinitialize an existing one       |
+| log      | Show commit logs                                                |
+| merge    | Join two or more development histories                          |
+| mv       | Move or rename a file, dir, or symlink                          |
+| pull     | Fetch from and merge with another repo or local branch          |
+| push     | Update remote refs along with associated objects                |
+| rebase   | Forward-port local commits to the updated upstream head         |
+| reset    | Reset current HEAD to the specified state                       |
+| rm       | Remove files from the working tree and from the index           |
+| show     | Show various types of objeccts                                  |
+| status   | Show the working tree status                                    |
+| tag      | Create, list, delete, or verify a tag object signed with GPG    |
+
+
+* Object Types
+
+Git's _object store_ contains original data files and all log messages, author info, dates, etc. There are four types of objects in the store. The objects are stored in compressed _pack files_.
+
+ - Blobs
+   Each version of a file is represented as a _blob_, holding file's data but no metadata.
+
+ - Trees
+   A _tree_ object represents one level of directory information, with blob id, path and other metadata. By recursively references a complete hierarchy of files and subdires can be built.
+
+ - Commits
+   A _commit_ object holds metadata for each change, including author, committer, date, log message etc. It points to a tree object that captures the state of the repo at the time of the commit. 
+
+ - Tags
+   A _tag_ object assigns an arbitrary name to a specific object, usually a commit.
+
+* Index
+
+The index is a temporary and dynamic binary file that describes the directory structure of the entire repo, it captures a version of the project's overall structure at some moment in time.
+
+* Globally Unique IDs and Content-Addressable Names
+
+Git uses 160-bit SHA1 generated from the _content_ of an object as the object's ID. Same ID means same content in the object, and vice versa.
+
+
+* Some Git plumbing commands
+
+#+BEGIN_SRC shell-script
+  # parse references to SHA1 ID, accepts ID prefixes
+  git rev-parse 3b18e512d  # 3b183512dba79e4c8300dd08aeb37f8e728b8dad
+
+  # print file content by its ID
+  git cat-file -p 3b183512dba79e4c8300dd08aeb37f8e728b8dad
+  ## Hello World!
+
+  # captures the index state and save it to a tree object
+  git write-tree # 68aba62e450c0ebc3396e8ae9335232cd93a3f60
+
+  # this is how a tree object looks like
+  git cat-file -p 68aba62e450c0ebc3396e8ae9335232cd93a3f60
+  ## 100644 blob 3b183512dba79e4c8300dd08aeb37f8e728b8dad     hello.txt
+
+  # make a commit specified by the tree object ID
+  echo -n "Commit a file that says hello world" | git commit-tree 68aba62e450c0ebc3396e8ae9335232cd93a3f60
+  ## 3ede4622cc241bcb0983af360e7413b9ddf6c
+
+  # what does a commit object look like?
+  git cat-file -p 3ede4622
+  ## tree 68aba62e450c0ebc3396e8ae9335232cd93a3f60
+  ## author John Doe <jdoe@example.com> 1220233277 -0500
+  ## committer John Doe <jdoe@example.com> 1220233277 -0500
+  ## Commit a file that says hello world
+
+  # give a tag to a commit
+  git tag -m "Tag version 1.0" V1.0 3ede4622
+
+  # what is this tag?
+  git rev-parse V1.0
+  ## 6b608c22cc241bcb09683af36360e7413b9ddf6c
+
+  # what does a tag object look like?
+  git cat-file -p 6b608c22
+  ## object 3ede4622cc241bcb0983af360e7413b9ddf6c
+  ## type commit
+  ## tag V1.0
+  ## tagger John Doe <jdoe@example.com> Sun Oct 26 17:07:15 2014 -0500
+  ##
+  ## Tag version 1.0
+#+END_SRC

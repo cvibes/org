@@ -1,0 +1,271 @@
+#+TITLE: Common Lisp
+#+OPTIONS: toc:2
+
+[[http://www.gigamonkeys.com/book][Practical Common Lisp]]: by Peter Seibel
+
+See [[file:slime.org][Slime]] for setting up development environment.
+
+* Functions
+
+** Parameters
+
+*** Required
+
+#+BEGIN_SRC lisp
+(defun foo (a b c) (list a b c)) ; -> foo
+(foo 1 2 3)                      ; -> (1 2 3)
+(foo 1 2)                        ; -> ERROR: too few params
+(foo 1 2 3 4)                    ; -> ERROR: too many params
+#+END_SRC
+
+*** Optional
+
+#+BEGIN_SRC lisp
+;; default value for optional params is NIL
+(defun foo (a b &optional c d) (list a b c d) ; optional params: c, d
+(foo 1 2)                                     ; -> (1 2 NIL NIL)
+(foo 1 2 3)                                   ; -> (1 2 3 NIL)
+(foo 1 2 3 4)                                 ; -> (1 2 3 4)
+
+;; Set a default value for optionals
+(defun foo (a &optional (b 10)) (list a b))
+(foo 1 2)                                     ; -> (1 2)
+(foo 1)                                       ; -> (1 10)
+
+;; 'Supplied' flag for the optionals: convention to name '-supplied-p'
+(defun foo (a &optional (b NIL b-supplied-p)) 
+  (list a b b-supplied-p))
+(foo 1)                                       ; -> (1 NIL NIL)
+(foo 1 NIL)                                   ; -> (1 NIL T)
+(foo 1 2)                                     ; -> (1 2 T)
+#+END_SRC
+
+*** Rest
+
+    For variable number of arguments. All arguments after =&rest= will be put together into the one arg after it.
+
+#+BEGIN_SRC lisp
+;; all arguments will be in numbers
+(defun + (&rest numbers) ...)
+#+END_SRC
+
+*** Keyword
+
+#+BEGIN_SRC lisp
+(defun foo (&key a b (c 10 c-supplied-p)) (list a b c c-supplied-p))
+(foo :a 1 :c 3 :b 2)                     ; -> (1 2 3 T)
+
+;; c got default value 10
+(foo :b 1)                               ; -> (NIL 1 10 NIL)
+
+;; default value can refer earlier arguments
+(defun foo (a (b 0 b-supplied-p) (c (+ a b)))
+  (list (a b c b-supplied-p)))
+(foo :a 1)                               ; -> (1 0 1 NIL)
+(foo :b 1)                               ; -> (0 1 1 T)
+(foo :b 1 :c 4)                          ; -> (0 1 4 T)
+
+;; keyword argument names can be different from caller and function body
+(defun foo (&key ((:apple a)) ((:box b) 0) ((:charlie c) 0 c-supplied-p))
+  (list a b c c-supplied-p))
+
+(foo :apple 10 :box 20)                  ; -> (10 20 0 NIL)
+#+END_SRC
+
+*** Mixed
+
+Arguments must declared in this order: =required=, =optional=, =rest= and =keyword=.
+
+Combining =optional= and =keyword= is not recommended:
+
+#+BEGIN_SRC lisp
+(defun foo (a &optional b &key c) (list a b c))
+
+;; this is ok
+(foo 1 2 :c 3)                          ; -> (1 2 3)
+
+;; this is ok too
+(foo 1)                                 ; -> (1 NIL NIL)
+
+;; this  is NOT ok, optional b eats the symbol :c, not enough left for keyword/value pair
+(foo 1 :c 3)                            ; -> ERROR
+#+END_SRC
+
+Combining =rest= and =keyword= has a surprising behavior:
+Both bounding to =rest= and =keyword= happen.
+
+#+BEGIN_SRC lisp
+(defun foo (&rest rest &key a b c) (list rest a b c))
+(foo :a 1 :b 2 :c 3)    ; -> ((:A 1 :B 2 :C 3) 1 2 3)
+#+END_SRC
+
+** Higher Order Functions
+
+=defun= does two things: define a function object and give it a name.
+
+A =function object= is an internal LISP object, compiled from function body text.
+
+*** FUNCTION
+
+=function= will return the function object of a function, it has the shortcut =#'=
+
+#+BEGIN_SRC lisp
+(function foo)          ; -> <Interpreted function FOO>
+#'foo                   ; -> <Interpreted function FOO>
+#+END_SRC
+
+*** FUNCALL
+
+Invoke a function object with arguments
+
+#+BEGIN_SRC lisp
+(foo 1 2 3)
+(funcall #'foo 1 2 3)   ; -> same as above
+#+END_SRC
+
+Pass function object to other functions, then use =funcall= to invoke
+
+#+BEGIN_SRC lisp
+(defun double (x) (* 2 x))
+(defun plot (fn min max step)
+  (loop for i from min to max by step do
+    (loop repeat (funcall fn i) do (format t "*"))
+    (format t "~%")))
+(plot #'double 1 5 1)           ; -> print 2, 4,... 10 stars per line
+#+END_SRC
+
+*** APPLY
+
+Same as =funcall=, but bundles all arguments (last must be list) into single list and pass to function object.
+
+*** Anonymous functions: =lambda=
+
+=lambda= can be thought of as a special kind of function name where the name describes what it does.
+
+#+BEGIN_SRC lisp
+;; use function to get function object, not necessary but originally lambda cannot
+;; be evaluated, the without-version is a syntactic sugar that wraps the function call
+;; in a macro.
+(funcall #'(lambda (x) (* 2 x) 21)
+((lambda (x) (* 2 x)) 21)
+#+END_SRC
+
+* Variables
+
+  - =local= vs. =dynamic=
+  - =Strongly typed=: All variables/objects have type information associated, all mismatched types will be detected.
+  - =Dynamically typed=:  type errors will be detected at runtime.
+  - Variables hold object refs, except for "small" numbers and chars, which are immutable.
+  - =Binding forms= are any constructs that introduces variables that are only usable within those constructs.
+    =let=, =let*= and =lambda= are all binding forms.
+
+** Lexical variables
+
+  - All =binding forms= introduces =lexically scoped variables=.
+
+    =Lexically scoped variables= can only be referred by code that's textually within the binding form.
+
+  - If a nested =binding form= such as anonymous function is returned from the surrounding binding 
+    form, it can still access bindings in the outer binding form, creating a =closure=.
+
+  - A =closure= captures the =binding=, _not_ the value. It can access and also modify the captured 
+    variable.
+
+** Dynamic variables
+
+Dynamic variables are Common Lisp's version of global variables.
+
+There are two ways to create dynamic variables: =defvar= and =defparameter=.
+Dynamic variable names are by convention enclosed in =*=.
+
+=defvar= can define variables without an initial value, and if given a value, only
+assigns that value if the variable is undefined.
+
+Use =defparameter= to define variables that affect the code behavior.
+
+Dynamic variable bindings can be temporarily changed in a binding form such as =let=,
+after the form ends it'll be restored to the binding before. Hence =dynamic=.
+
+#+BEGIN_SRC lisp
+;; global, dynamic variable *x*
+(defvar *x* 10)                 ; -> x = 10
+(defun foo ()
+  (format t ("X: ~d~%") *x*))
+;; global binding
+(foo)                           ; -> X: 10
+;; dynamic, local binding
+(let ((*x* 20)) (foo))          ; -> X: 20
+;; back to global binding
+(foo)                           ; -> X: 10
+#+END_SRC
+
+  - =Lexically scoped= vs. =dynamically scoped=
+    - When a variable is =lexically scoped=, the system looks to where the =binding form=
+      is _defined_ to determine its value.
+    - When a variable is =dynamically scoped= the system looks to where the =binding form= 
+      is _called_ to determine its value.
+
+
+=defconstant= defines global contants. They cannot be rebound or used as function
+arguments.
+
+** Assignment
+
+=setf= is the general macro that is used for assignment, much like = in other
+languages.
+
+** Equality
+
+   - =eq=
+
+     Tests for =object identity=. Since numbers and characters of the same value might
+     be different objects in Common Lisp, one should not use =eq= for these data.
+
+   - =eql=
+
+     Like =eq= but makes sure numbers/characters are compared for value.
+
+   - =equal=
+
+     Consiers lists equivalent if they have the same structure and contents, 
+     recursively according to =equal=
+
+   - =equalp=
+
+     Similar to =equal= but looser. Char/string are =equalp= if only difference is case.
+     Numbers of different types are =equalp= if they have same math value. Lists/arrays
+     with =equalp= elements are also =equalp=
+
+* OOP
+
+** Generic Functions
+
+Common Lips is class-based, object-oriented programming language. All objects are
+instances of a particular class.  Built-in classes such as =NUMBER= and =STRING=
+have opaque representations accessible only via standard functions;  instances of
+user-defined classes consist of named parts called =slots=.
+
+Classes are arranged in a hierarchy, a taxonomy for all objects, with a single root 
+=T=. 
+
+A =generic function= defines an abstract operation, specifying its name and parameter
+list but no implementation.  It can accept any object as arguments.  The actual implementation
+is provided by =methods=.  Each =method= provides an implementation of the =generic function=
+for particular classes of arguments.  =Methods= don't belong to classes, they belong
+to the =generic function=, which is responsible for determining what method or methods
+to run in response to a particular invocation.
+
+** Classes
+
+* Conditions & Restarts
+
+=Conditions= are Lisp's way of error handling.  When there is an error, Lisp code
+signals a =condition=, which is an object, whose class indicates the nature of the
+condition, and whose instance data carries information about the details of the 
+particular circumstances.
+
+Condition classes are defined with the =DEFINE-CONDITION= macro, its super class is
+=CONDITION= instead of =STANDARD-OBJECT=.  Instances are created by =MAKE-CONDITION=.
+
+For error handling, the class should be defined as a sub class of =ERROR=, a subclass
+of =CONDITION=.

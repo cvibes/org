@@ -1,0 +1,84 @@
+#+TITLE: Controllers
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+#+OPTIONS: toc:1
+
+Controllers act as the link between the domain model and the view; they 
+provide data and services to the view and define the business logic required
+to translate user actions into changes in the model. In other words, controllers
+define data and programming APIs that are exposed to markups.
+
+Controllers are instantiated by DI, are not registered, so controllers *cannot*
+be listed as dependency by other controllers or services.
+
+Each =ng-controller= directive creates a new instance of controller.
+
+* Scopes
+
+  Provided by =$scope= service to communicate between controllers and views.
+
+  Scopes are organized in hierachy. The root scope (=$rootScope=) provides means
+  for sending events between scopes, allowing communication between controllers.
+  To use root scope, include =$rootScope= in controller constructor requested 
+  services.
+
+
+* Data sharing between controllers
+
+  Event emitters add a layer of indirection on top of functions calls. Code that
+  emits events doesn't know which functions are registered as listeners.  Code 
+  that heavily relies on events can be hard to understand.
+
+  Use event emitters sparingly, it works well for transmitting results of user
+  interaction between controllers.
+
+** Use Event Emitters
+
+*** AngularJS's own event service
+
+  | =$broadcast(name, args)= | Sends event from current scope to all child scopes                                  |
+  | =$emit(name, args)=      | Sends event from current scope up to parent scope                                   |
+  | =on(name, handler)=      | Register handler function which is invoked when event 'name' received by this scope |
+
+#+BEGIN_SRC javascript
+anaular.module("myApp", [])
+    .controller("myController", function($scope, $rootScope){ // request $rootScope service
+        $scope.$on("dataUpdated", function(event, args){ // event handler
+            $scope[args.type] = args.data;
+        });
+        $scope.getData = function(type){
+            // send event up to $rootScope
+            $scope.$emit("gotData", {data: $scope.data});
+        };
+        $scope.setData = function(type, data){
+            // send event down to child scopes
+            $rootScope.$broadcast("dataUpdated", { type: type, data: data} );
+        };
+    });
+#+END_SRC
+
+*** Event Emitter module from NodeJS
+
+
+** Data Inheretance
+
+  Simple to use, but creates tight coupling and brittle code. Should only be used
+  in simple case, never use for network data.
+
+   - Controllers are inherited in the order in which they are defined in HTML structure.
+   - Looking up data starts from current scope and continues to outward scopes.
+   - Writing data adds new property to current scope if not found in current scope.
+   - Use intermediary data property to avoid new definitions in current scope.
+
+** ModelService paradigm
+
+   Services are a perfect tool for *exposing data loaded from the server* shared
+   between controllers, because services are /singletons/.
+
+* Integrating scope with other frameworks
+
+| $apply(expression)                   | Apply a change to the scope                                             |
+| $watch(expression, handler)          | Register a handler to call when value referred by expression is updated |
+| $watchCollection(expression,handler) | Same as $watch, watch over collection                                   |
+
+* Testing
+

@@ -1,0 +1,67 @@
+#+TITLE: Flex Box
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+#+OPTIONS: toc:1
+
+* Overview
+
+Flexbox allows items within a flex container adjust their widths automatically, making
+layouts much easier without using floats.
+
+To make any container a flex container, add the =display: flex;= CSS property
+
+#+BEGIN_SRC css
+.container {
+  display: -webkit-flex; /* for Safari */
+  display: flex;         /* for Firefox, Chrome, IE11 */
+}
+#+END_SRC
+
+Every direct child of the container element is automatically turned into a flex item. 
+
+* Container properties
+
+  - =flex-flow=
+    - =row nowrap= : default
+      items are displayed side by side, first source item being the left-most, items keep in same row no matter how narrow the window.
+    - =reverse-row wrap=
+      first source item being right-most, items don't fit inside the container will drop off to next row.
+    - =reverse-column wrap-reverse=
+      items stacked, last source item on top, when container gets too short, items drop to new column in reverse order.
+
+  - =justify-content=
+    - =flex-start=: default
+      aligns item to the left or the row
+
+    - =flex-end=
+      aligns item to the right
+    - =center=
+      centers flex items in the middle of the container.
+    - =space-between=
+      evenly spaces out the items, dividing space between them equally, left-most item to left edge, right-most item to right edge.
+    - =space-around=
+      distributes space within the container around all items.
+
+  - =align-items=: vertical alignment
+    - =flex-start=
+      aligns the tops of items to top of container
+    - =flex-end=
+      aligns bottoms of items to bottom of container
+    - =center=
+    - =baseline=
+      aligns the baseline of the first element within each item
+    - =stretch=: default
+      strectches each item to same height
+
+* Flex item properties
+
+  - =order=: dictates order of display, can be any whole number, like -1, normally 1, 2, 3, 4...
+  - =align-self=: uses same value as =align-items= in container property, only applies to the item itself
+  - =flex-grow=: whole number, used to calculate proportionally how much width an item uses and gains when container expands.
+  - =flex-shrink=: whole number, used to calculate proportionally who much width an item loses when container shrinks.
+  - =flex-basis=: value in width, like =250px=, provides a width value, will be used when =flex-grow= is set to 0.
+  - =flex=: shorthand for =flex-grow flex-shrink flex-basis=
+
+* Notes
+
+  - to set all items as equal width in a row, use =flex: 1= in items and =flex-flow: row no wrap= on container
+  - set =flex-basis= to act as breakpoints to determine when items wrap onto new rows.

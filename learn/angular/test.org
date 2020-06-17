@@ -1,0 +1,468 @@
+#+TITLE:           Setup for Development and Testing
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+#+OPTIONS:         toc:1
+
+* Directory structure
+
+#+BEGIN_EXAMPLE
+__ proj01
+ |__ package.json
+ |__ Gruntfile.js
+ |__ bower.json
+ |__ karma.conf.js
+ |__ .bowerrc
+ |__ .jshintrc
+ |__ test
+    |__ PageController-spec.js
+    |__ ...
+ |__ node_modules
+    |__ karma
+    |__ ...
+ |__ app
+   |__ index.html
+   |__ js
+     |__ index.js
+     |__ controllers
+       |__ PageController.js
+       |__ ...
+     |__ directives
+     |__ ...
+   |__ css
+     |__ main.css
+     |__ ...
+   |__ views
+     |__ part1.tmpl.html
+     |__ ...
+   |__ bower_components
+     |__ jquery
+     |__ angular
+     |__ ...
+
+#+END_EXAMPLE
+
+
+* Tools
+
+** Node Modules
+
+package.json
+#+BEGIN_SRC javascript
+{
+  "name": "rlis.dev",
+  "version": "0.0.0",
+  "description": "Use NodeJS packages to facilitate RLIS development.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
+    "grunt": "^0.4.0",
+    "grunt-contrib-connect": "^1.0.2",
+    "grunt-contrib-jshint": "^1.1.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-karma": "^2.0.0",
+    "jshint": "^2.9.4",
+    "karma-chai": "^0.1.0",
+    "karma-mocha": "^1.3.0",
+    "karma-ng-html2js-preprocessor": "^1.0.0",
+    "load-grunt-tasks": "^3.5.2",
+    "mocha": "^3.2.0",
+    "serve-static": "^1.11.2"
+  }
+}
+#+END_SRC
+
+#+BEGIN_SRC shell-script
+  npm install
+#+END_SRC
+
+** Bower components
+
+bower.json
+#+BEGIN_SRC javascript
+{
+  "name": "rlis.dev",
+  "description": "Use NodeJS packages to facilitate RLIS development.",
+  "main": "index.js",
+  "authors": [
+    "Xiaohui Lu <xlu3@bmr013.srl.ford.com>"
+  ],
+  "license": "ISC",
+  "moduleType": [
+    "node"
+  ],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "angular-mocks": "1.3"
+  }
+}
+#+END_SRC
+
+#+BEGIN_SRC shell-script
+  bower install
+#+END_SRC
+
+** Karma
+
+karma.conf.js
+#+BEGIN_SRC javascript
+// Karma configuration
+// Generated on Wed Feb 24 2016 12:17:02 GMT-0500 (EST)
+// To enable proper template loading for testing directives with templateUrl:
+//   1. install npm module ng-html2js-preprocessor
+//   2. list template files in files option
+//   3. list ng-html2js as a plugin
+//   4. register template files to be preprocessed by ng-html2js
+//   5. set ngHtml2JsPreprocessor options, set a module name
+//   6. templates can be loaded as a module in module() call in test code.
+module.exports = function(config) {
+  config.set({
+
+    // base path that will be used to resolve all patterns (eg. files, exclude)
+    basePath: '/proj/rlis/www',
+
+    frameworks: ['mocha', 'chai'],
+
+    // list of files / patterns to load in the browser
+    // * jQuery needs to be loaded _before_ angular
+    // * Needs to load tempaltes for preprocessor
+    files: [
+      'jquery/js/jquery.min.js',
+      'lib/js/angular/angular.js',
+      '/proj/rlis/dev/bower_components/angular-mocks/angular-mocks.js',
+      'select/js/admin/app.js',
+      'select/js/admin/controllers/addItemCtrl.js',
+      '/proj/rlis/dev/tests/select/admin/controllers/addItemCtrl.spec.js',
+      'select/templates/html/admin/*.html'
+    ],
+
+    // list of files to exclude
+    exclude: [],
+
+    // load ng-html2js preprocessor so templates can be loaded for testing easily
+    plugins: [
+      'karma-ng-html2js-preprocessor',
+      'karma-mocha',
+      'karma-chai'
+    ],
+
+    // preprocess matching files before serving them to the browser
+    preprocessors: {
+      'app/views/*.html': ['ng-html2js']
+    },
+
+    // All views/*.html under app directory can be loaded as 'my.templates'
+    //   module in test suite: beforeEach(function(){module('myApp', 'my.templates');})
+    ngHtml2JsPreprocessor: {
+      stripPrefix: 'app/',
+      moduleName: 'my.templates'
+    },
+
+    // test results reporter to use; possible values: 'dots', 'progress'
+    reporters: ['progress'],
+
+    // web server port
+    port: 9876,
+
+    // enable / disable colors in the output (reporters and logs)
+    colors: true,
+
+    // level of logging, possible values;
+    // config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+    logLevel: config.LOG_INFO,
+
+    // enable / disable watching file and executing tests whenever any file changes
+    autoWatch: true,
+
+    // Continuous Integration mode
+    // if true, Karma captures browsers, runs the tests and exits
+    singleRun: false,
+  })
+}
+
+#+END_SRC
+
+** Grunt
+   
+*** Config
+=Gruntfile.js=
+#+BEGIN_SRC javascript
+/* global module require */
+'use strict';
+module.exports = function(grunt){
+  var serveStatic = require('serve-static');
+  grunt.initConfig({
+    pkg: grunt.file.readJSON('package.json'),
+
+    // connect
+    connect: {
+      options: {
+        hostname: '*',
+        port : 9000,
+        open: true,
+        livereload: true,
+        middleware: function (connect) {
+          return [
+            connect().use(
+              '/bower_components',
+              serveStatic('./bower_components')
+            )
+            .use(
+              '/',
+              serveStatic('../www')
+            )
+          ];
+        },
+        base : {
+          path: '../www'
+        }
+      },
+      development : {
+        keepalive: true
+      }
+    },
+
+    // jshint
+    jshint: {
+      options: {
+        jshintrc: '.jshintrc'
+      },
+      all : [ 'Gruntfile.js', 'app/js/*.js', 'test/*.js' ]
+    },
+
+    karma: {
+      unit: {
+        configFile: 'karma.conf.js',
+        // set background to be true so it doesn't block following tasks
+        background: true,
+        singleRun: false
+      }
+    },
+
+    watch: {
+      options: {
+        livereload: true
+      },
+      all : {
+        files: [ 'app/**' ],
+        tasks: ['jshint']
+      }
+    }
+
+  });
+
+  require('load-grunt-tasks')(grunt);
+
+  grunt.registerTask('default', []);
+  grunt.registerTask('test', ['karma']);
+  grunt.registerTask('serve', ['karma', 'connect', 'watch']);
+  grunt.registerTask('build', ['jshint', 'karma']);
+};
+#+END_SRC
+
+*** Run
+
+#+BEGIN_SRC shell-script
+# start app server with livereload
+grunt serve
+# start continuous karma server
+grunt test
+#+END_SRC
+
+** Protractor
+
+   * Protractor is Selenium-based program that run tests in real browsers. It's used to
+     run end-to-end tests that mimic real-world user behaviors.
+   * Independent of Karma, cannot be used with Karma.
+
+*** Installation
+
+**** Protractor
+
+#+BEGIN_SRC shell-script
+  npm install -g protractor # installs protractor globally
+  web-driver manager update # installs Selenium web-drivers, which manages browsers
+#+END_SRC
+
+**** Selenium Server on Windows
+
+Selenium Server 2.x depends Java Runtime 1.7, 3.x depends Java Runtime 1.8.
+
+   1. Download [[http://docs.seleniumhq.org/download/][Selenium Standalone Server]] jar file.
+   2. Download [[http://selenium-release.storage.googleapis.com/2.53/IEDriverServer_Win32_2.53.0.zip][IE WebDriver Server]], save executable to a directory in =%PATH%=
+   3. Download [[https://sites.google.com/a/chromium.org/chromedriver/][Chrome Web Driver]], save executable to a directory in =%PATH%=
+   4. Firefox support is outdated, see [[http://stackoverflow.com/questions/25646639/firefox-webdriver-doesnt-work-with-firefox-32][StackOverflow]]
+
+*** Configuration
+
+   This configuration starts IE and Chrome on a remote Windows machine with IP address =19.10.40.204=.
+
+  =protractor.conf.js=
+
+#+BEGIN_SRC javascript
+exports.config = {
+    framework: 'mocha',
+    // seleniumAddress: 'http://localhost:4444/wd/hub',
+    specs: ['test/e2e_spec.js'],
+    multiCapabilities: [
+        // {
+        //     browserName: 'firefox'
+        // },
+        {
+            browserName: 'internet explorer',
+            seleniumAddress: 'http://19.10.40.204:4444/wd/hub'
+        },
+        {
+            browserName: 'chrome',
+            seleniumAddress: 'http://19.10.40.204:4444/wd/hub'
+        }
+    ]
+    // capabilities: {
+    //     browserName: 'chrome',
+    //     seleniumAddress: 'http://19.10.40.204:4444/wd/hub'
+    // }
+};
+
+#+END_SRC
+
+*** Writing Tests
+
+  =e2e_spec.js=
+
+#+BEGIN_SRC javascript
+
+var chai = require('chai');
+var chaiAsPromised = require('chai-as-promised');
+chai.use(chaiAsPromised);
+var expect = chai.expect;
+browser.get('http://bmr013.srl.ford.com:9000');
+var name = element(by.binding('username'));
+expect(name.getText()).to.eventually.equal('Hello, Juan');
+
+#+END_SRC
+
+*** Runnings tests
+
+   1. Start web server that serves the application (in above example it's served on bmr013.srl.ford.com:9000)
+   2. Start Selenium Standalone Server on windows (IP address =19.10.40.204= in above example) by:
+     #+BEGIN_SRC shell-script
+       java -jar selenium-server-standalone-2.48.2.jar
+     #+END_SRC
+   3. Run protractor on tests:
+     #+BEGIN_SRC shell-script
+       protractor protractor.conf.js
+     #+END_SRC
+
+* Unit Testing
+
+=ngMock= module is provided by =AngularJS= to provide mocking for tests. It's used
+to inject and mock =AngularJS= services within unit tests. It can also extend other
+modules so they are synchronous, like =$httpBackend= which lets us mock XHR requests
+in tests and return sample data instead.
+
+** Testing Services
+
+Use =ngMock='s =module= method to load modules and use =inject= to bring the desired
+service to test.
+
+#+BEGIN_SRC javascript
+  // Code to be tested
+  angular.module('myApp').factory('myService', function(){
+      return { greet: function(msg){ return 'hello ' + msg + '!'; } };
+  });
+
+  // test code
+  desribe('myService tests', function(){
+      var myService; // Declare a variable to store ref to the service
+
+      beforeEach(function(){
+          // ngMock's module call to prepare module to be loaded in tests        
+          module('myApp');
+
+          // inject the service.
+          // The _underscores_ are a convenient convention so you can have
+          // your variable name be the same as the injected service
+          inject(function(_myService_){
+              myService = _myService_;
+          });
+      });
+
+      it('should greet with correct msg', function(){
+          var result = myService.greet('world');
+          expect(result).toBe('hello world!');
+      });
+  });
+#+END_SRC
+
+** Testing controllers
+
+#+BEGIN_SRC javascript
+  // controller code
+  angular.module('select.admin')
+  .controller('AddItemCtrl', function($scope){
+    $scope.name = 'AddItemCtrl';
+  });
+
+  // test code
+  describe('AddItemCtrl', function(){
+    beforeEach(module('select.admin')); // load module first
+    var $controller;
+    // use the _underscore_ convention to bring in $controller service
+    beforeEach(inject(function(_$controller_){
+                 $controller = _$controller_;
+               }));
+
+    describe('$scope.name', function(){
+      it('should have the correct name', function(){
+        var $scope = {};
+        // use the $controller service to get the actual controller
+        var controller = $controller('AddItemCtrl', { $scope: $scope });
+        expect($scope.name).to.equal('AddItemCtrl');
+      });
+    });
+  });
+#+END_SRC
+
+** Testing directives
+
+#+BEGIN_SRC javascript
+  // directive
+  angular.module('myApp')
+  .directive('myDirective', function(){
+    return {
+      restrict: 'E',
+      template: '<h1>seen it {{1 + 1}} times</h1>'
+    };
+  });
+
+  // test this directive
+  describe('Test myDirective', function(){
+    var $compile, $rootScope;
+    beforeEach(module('myApp')); // load module first
+
+    // use inject to get services $compile and $rootScope
+    beforeEach(inject(function(_$compile_, _$rootScope_){
+                 $compile = _$compile_;
+                 $rootScope = _$rootScope_;
+               }));
+
+    it('replaces the element with the appropriate content', function(){
+      // Compile a piece of directive HTML
+      var element = $compile("<my-directive></my-directive>")($rootScope);
+      // fire all watchers, expressions get evaluated.
+      $rootScope.digest();
+      expect(element.html()).toContain("seen it 2 times");
+    });
+  });
+#+END_SRC

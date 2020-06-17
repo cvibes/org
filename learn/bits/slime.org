@@ -1,0 +1,90 @@
+#+TITLE: Setup Slime for Common Lisp
+
+* Use Portacle as an one-stop solution: Windows/MacOS/Linux x86
+
+  [[https://portacle.github.io][Download]] the package and unzip it, run =portacle.run= to start.
+
+* Set up Emacs + SBCL + Slime + QuickLisp
+
+** SBCL - Steel Bank Common Lisp
+
+*** Installation
+   =apt-get install sbcl=
+   
+*** Config
+
+    In =.emacs=, add:
+
+    #+BEGIN_SRC lisp
+    (setq inferior-lisp-program "/usr/bin/sbcl")
+    #+END_SRC
+
+** Slime - The Superior Lisp Interaction Mode for Emacs
+
+*** Installation
+
+    - Use Emacs package manager to get it from MELPA
+      
+      If behind a firewall, set =http_proxy= and =https_proxy= environmental variables before starting Emacs
+
+    - Get package from Github 
+      
+      1. [[https://github.com/slime/slime/releases][Download]] directly and unzip to =.emacs.d=
+      2. Add unzipped directory to =.emacs.d=
+
+         #+BEGIN_SRC emacs-lisp
+         (add-to-list 'load-path "/home/xlu3/.emacs.d/slime-2.24")
+         #+END_SRC
+
+*** Config
+
+    Add to =.emacs= for better REPL:
+
+    #+BEGIN_SRC emacs-lisp
+    (require 'slime-autoloads)
+    (add-to-list 'slime-contribs 'slime-repl)
+    #+END_SRC
+
+*** Notes
+    
+    Previous installations/packages of SLIME and its plug-ins might get in the way of a new installation. So make sure to remove any old packages.
+
+** QuickLisp: The package manager for Common Lisp
+
+*** Install QuickLisp
+
+    1. =apt-get install cl-quiclisp=
+    2. Start =sbcl= and:
+
+    #+BEGIN_SRC lisp
+    (load "/usr/share/common-lisp/source/quicklisp/quicklisp.lisp")
+    (quicklisp-quickstart:install) ; default install
+    ;; or for firewall
+    (quicklisp-quickstart:install :proxy "http://proxy.com:83")
+    ;; or to a different location
+    (quicklisp-quickstart:install :path "~/.quicklisp")
+    #+END_SRC
+
+*** Config
+    
+    Add to =.sbclrc= so =sbcl= can autoload =quicklisp= everytime:
+
+    #+BEGIN_SRC lisp
+    #-quicklisp
+    (let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"
+                                           (user-homedir-pathname))))
+      (when (probe-file quicklisp-init)
+        (load quicklisp-init)))
+    #+END_SRC
+
+*** Use =quicklisp= to install libraries
+
+    #+BEGIN_SRC lisp
+    (ql:quickload "package-name")
+    #+END_SRC
+
+* Run
+
+  #+BEGIN_SRC emacs-lisp
+  M-x slime
+  #+END_SRC

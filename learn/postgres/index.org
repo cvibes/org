@@ -1,0 +1,14 @@
+
+* General
+
+  - Describe table 
+    \d table_name
+  - Show table/index/object size
+    select pg_size_pretty(pg_relation_size('table_name');
+
+* Schemas
+
+** Usage Patterns
+
+   - Constrain users to user-private schemas.
+   - Remove the public schema from each user's default =search_path=.

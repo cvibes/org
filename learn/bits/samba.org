@@ -1,0 +1,112 @@
+#+TITLE: SAMBA
+
+* History
+
+  - IBM =NetBIOS=: low level protocol to exchange BIOS functions across small network (token ring).
+  - =NetBEUI=: Extended User Interface of NetBIOS, designed for small LANs. Rivals with Novell IPX.
+  - RFC 1001/1002 standardized NetBIOS over TCP/UDP: =NBT=, basis for current implementations.
+    - Name service
+    - Datagrams
+    - Sessions
+
+* Names
+
+  - Name registration/resolution can be either _broadcast_, or _using name server (NBNS)_
+  - Each machine on a NBT network can be one of the four =node types=:
+    - =b-node=, use broadcase only.
+    - =p-node=, use NBNS only.
+    - =m-node=, "mixed node", use broadcast for registration/resolution, if fails, fall back to NBNS.
+    - =h-node=, "hybrid node", similar to m-node, prefers NBNS over broadcast
+  - Node Types can be looked up by '=ipconfig /all=' under Windows.
+  - NetBIOS names consists of =15= characters, a sixteenth byte can specify the service type.
+
+* SMB Protocol
+
+  - Machines exchange messages (Server Message Blocks).
+  - Client sends requests, server responds with responses.
+  - Each message consists of a fix-sized =header= and =command string=.
+  - Within a session, machines can behave as both client and server.
+  - To establish a SMB connection:
+    1. Establish a NetBIOS session.
+       - NetBIOS opens channel between the two machines.
+       - Client sends request (source/type + destination/type + flag), server responds with session granted message (message + flag).
+    2. Negotiate the protocol variant.
+       - client sends message with TID set to 0. =TID= represents a connection to a share on server.
+       - The message lists all protocols it can use.
+       - Server responds with an index of which protocol to use.
+    3. Set session parameters, make tree connection to a resource.
+       - Client sends message with login information and requested resource.
+       - Server responds with TID.
+
+* Groups, Windows Workgroups, Domain
+
+** SMB groups
+    SMB groups are just partitions of computers on the same network.
+
+** Windows Workgroup
+   - basically same as SMB groups, with the following additions:
+     - Browsing. 
+       - A local machine, called Local Browse Master, maintains a list of machines and their resources.
+       - Each server in a Windows Workgroup is required to announce its shares to the LBM after it registers its NetBIOS name.
+       - Any windows machine can be LMB.
+
+** Windows Domain
+
+   - A Windows NT Domain is basically a workgroup of SMB computers, with one addition: =domain controller=
+   - A Domain Controller maintains a domain-wide database of users/groups. Authentication is usually based on account/password.
+   - =SID=: Security Identifier, represents objects in the domain: users, groups, computers, processes.
+   - =ACL=: Access Control List. Permission settings. Each entry in an ACL consists of a SID and its access rights.
+
+** Authentication
+
+   1. Users types in account/password.
+   2. Secure challenge/response protocol is invokek between client and domain controller.
+   3. After validation, DC sends a SID to client.
+   4. Client uses the SID to create a =SAT= (Security Access Token), which has user/group/access encoded. Now client is logged in the domain.
+   5. When client requests resource from server, server send client into to DC, DC validates and sends back SID; server uses SID to create its own SAT for client. Client is authenticated. Server compares client SID and ACL to determine what permission client has to use/modify resource.
+   6. No plain-text passwords across network.
+
+** WINS
+
+   - Windows implementation of NBNS.
+   - Only simple names.
+   - Dynamic: new machine required to report and refresh its name/address.
+   - NOT workgroup/domain specific, can contain information for machines across different subnet.
+   - Multiple WINS server can sync with each other.
+   - Samba 2.2 can function as WINS server but does not sync with other Windows WINS servers.
+
+* Samba Authentication
+
+** Security Setting
+
+   Each user who attempts to connect to a share not allowing guest access must provide a password to make a successful connection. What Samba does with the password is determined by =security= setting.
+
+   - Share-level security
+
+     Each share in the workgroup has one or more passwords associated with it. Anyone who can provide a valid password can access.
+     - if share is 'guest only', no check for password.
+     - Samba checks password against provided user.
+     - if validation fails in previous step, Samba checks password against users listed in =username= option.
+
+   - User-level security
+
+     Each share is configured to allow access from certain users. Default for security setting.
+
+   - Server-level security
+    
+     Same as user-level, except Samba uses another server for password validation.
+
+   - Domain-level security
+
+     Samba is a member of a Windows Domain and uses the domain's PDC/BDC for authentication.
+  
+** Passwords
+
+   - plain text for earlier Windows
+   - encrypted passwords for more recent versions.
+   - three protocols: Windows Lan Manager, NT Lan Manager (NTLM), NTLMv2
+     1. passwords are encrypted and stored on both Samba server and client.
+     2. client and server negotiate a protocol version.
+     3. server sends a 8-byte random string as challenge.
+     4. client uses challenge to encrypt the already encryted password, send result to server.
+     5. server does the same, compare result with what client sent to validate.

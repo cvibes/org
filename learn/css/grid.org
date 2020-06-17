@@ -1,0 +1,11 @@
+#+TITLE: CSS Grid System
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+#+OPTIONS: toc:1
+
+* Basic Idea
+
+A CSS grid system is a predefined style sheet with styles that make it easy to add a layout grid to their pages. It uses class names added to =<div>= tags to create consistently sized columns.
+
+A page's width is divided into a set number of "units" that group easily to create columns of different widths.
+
+

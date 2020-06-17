@@ -1,0 +1,84 @@
+#+TITLE: Git
+#+STYLE: <style>pre.src { width: 80%; margin: 0 auto; }</style>
+
+* Branches
+
+  - =git commit= creates a _commit object_ that has the metadata and a pointer to the root project tree so it can re-create that snapshot.
+  - Next commit will contain a pointer to the previous commit.
+  - A _branch_ is a movable pointer to one the these commits, default is _master_, which has no special meaning.
+  - =git brance testing= creates a new branch named "testing". It still points to the current commit, and doesn't switch to the new branch.
+  - =git log --decorate= shows where the branch pointers are pointing.
+  - =git checkout testing= switches to testing branch.
+
+** basic merging
+
+  1. Create a new branch =issue53=, make some modifications.
+
+    #+BEGIN_SRC shell_script
+    git branch issue53
+    git checkout issue53
+    vim file1.html
+    git commit -s "fixed issue 53"
+    #+END_SRC
+
+  2. Second, different branch, "=hotfix=". After commit, merged with =master=.
+
+    #+BEGIN_SRC shell_script
+    git checkout -b hotfix
+    vim file2.html
+    git commit -s "hot fix"
+    git checkout master
+    git merge hotfix
+    #+END_SRC
+
+  3. More work on =issue53=, more commits. Finally merged with =master=.
+
+    #+BEGIN_SRC shell_script
+    git checkout issue53
+    vim file3.html
+    git commit -s "more work"
+    git checkout issue53
+    vim file4.html
+    git commit -s "more work, more work"
+    git checkout master
+    git merge issue53
+    #+END_SRC
+
+** Basic management
+
+   - =git branch= lists current branches
+   - =git branch -v= lists branches with commit messages.
+   - =--merged= and =--no-merged= options filter branches merged/not merged in current branch.
+   - =git branch -d testing= deletes branch =testing=
+
+** branching workflows
+
+*** long-running branches
+
+   - typical scenario for lots of projects.
+   - =master= branch is the most stable branch, ready for release.
+   - =development= branch is actively updated, merged into master when code matures enough.
+   - =proposed= branch is for testing new features, etc, merged into =development= branch when matures enough.
+   - idea is branching is used to maintain different levels of code maturity.
+
+*** topic branches
+
+   - short-lived, create and use for a single particular feature or related work.
+   - easy, low-cost to work with.
+
+** remote branching
+
+   - takes form =(remote)/(branch)=.
+   - references to the state of branches in remote repos, moved automatically in network communications, can't be moved locally.
+   - when cloning a remote repo, default remote name is set to =origin=, which can be changed by =-o= option when cloning.
+
+*** fetching
+
+   - =git fecth origin= retrieves updates from =origin= and moves pointer to new position.
+   - only updates the pointer, no actual data fetched.
+
+*** pushing
+
+   - =git push (remote) (localbranch):(remotebranch)= pushes =localbranch= to =remote='s =remotebranch=.
+   - in most cases =localbranch= has same name as =remotebranch=, this can be shortened to =git push (remote) (branch)=.
+

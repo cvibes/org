@@ -1,0 +1,28 @@
+#+TITLE: AngularJS
+** Partial Views
+   Parts of html document can be extracted and saved to indepedent files, and included in main document by <ng-include src="..."> directive. Source in =src= attribute has to be _single-quoted_.
+
+** [[file:services.org][Service]]
+
+   Services are singleton objects created by calling =factory= method on a module. This method take a name and a function which returns the singleton objec
+** [[file:directives.org][Directives]]
+
+   - Self-contained, reusable units of functionality.
+   - Created by calling =directive= method on a module, takes directive name and a function which returns a definition object.
+   - Definition object is used to define what and how the directive does.
+
+** [[file:./controllers.org][Controllers]]
+
+** [[file:filters.org][Filters]]
+** [[file:form.org][Form]]
+** URL Routing
+
+   Allow for different partial views to be displayed automatically based on the current URL.
+
+** Modules
+*** Purpose
+    - Associate an ng-app with a region of html
+    - Act as a gateway to key AngularJS features
+    - Help organize code and components of an app.
+
+** [[file:test.org][Setup for Dev & Testing]]

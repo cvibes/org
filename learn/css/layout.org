@@ -1,0 +1,24 @@
+#+TITLE: CSS Layout
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+#+OPTIONS: toc:1
+
+* Floating
+
+  - Problem 1: floated elements pop out of containing element
+    If floated elements are taller than the containing element, floated elements will pop out of the containing element.
+    
+    Solutions to force containing element to expand to include floated elements:
+    - Add an empty element like =<br/>= and set is style to =clear: both=
+
+    - Float the containing element.
+
+    - Use =overflow: hidden=
+
+    - The Micro Clear Fix: apply the class =clear= to containing element.
+      #+BEGIN_SRC css
+      .clear:after {
+        content: " ";
+        display: table;
+        clear: both;
+      }
+      #+END_SRC

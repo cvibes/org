@@ -1,0 +1,16 @@
+#+TITLE: Remote Repositories
+
+* Basic concepts
+
+| remote-tracking branches | branches associated with a remote and have the spedific purpose of following the changes of each branch in that remote repo                                                                 |
+| local-tracking branch    | branch paired wit ha remote-tracking branch. It is a form of integration branch that collects both the changes from your local developmment and the changes from the remote-tracking branch |
+| topic/development branch | local, non-tracking branch                                                                                                                                                                  |
+| remote branch            | a branch located in a non-local, remote repo. Usually an upstream source for a remote-tracking branch                                                                                       |
+
+* Basic commands
+
+| =git fetch=     | retrieves objects and their related metadata from a remote repo             |
+| =git pull=      | Like =git fetch=, but also merges changes into a corresponding local branch |
+| =git push=      | transfers objects and their metadata to a remote repo                       |
+| =git ls-remote= | shows a list of references held by a given remote                           |
+

@@ -1,0 +1,59 @@
+#+TITLE: Stash and Reflog
+
+* Stash
+
+Save current working directory and index and revert to last commit. Later restore
+saved state to resume working.
+
+#+BEGIN_SRC shell-script
+  # save current working state (working dir + index)
+  git stash save
+  # same as above, default action for stash is save
+  git stash
+  # same action, with a optional log message
+  git stash save "working on eTracker 123456"
+
+  # some messing around
+  echo 'messing around' >> file2
+
+  # and save again
+  git stash save "just messing around"
+
+  # list the current saves
+  git stash list
+  # stash@{0}: On master: just messing around
+  # stash@{1}: On master: working on eTracker 123456
+
+  # show the index and file changes recorded for stash against its parent commit
+  git stash show
+  # file2 |   1+
+  # 1 files changed, 1 insertions(+), 0 deletions(-)
+
+  # use git log options
+  git stash show -p stash@{0}
+  # patch format output...
+
+  # Now the working dir/index is reverted to HEAD of current branch
+  # Do some other work and commit.
+  # ...
+
+  git commit
+
+  # Now get back to the previous save and resume working
+  git stash pop
+  # revert to the state of "just messing around"
+#+END_SRC
+
+=git stash pop= will automatically merge the stash version into current commit,
+and then drop the saved state; if there are conflicts, =git stash pop= will
+report an error and wait for manual clearance of conflicts, and the saved state
+will _not_ be dropped. Use =git stash drop= to remove it from the stash stack.
+Use =git stash apply= to apply the changes in stashed version onto current commit
+without dropping it; thus =git stash pop= is equivalent to =git stash apply= then
+=git stash drop=.
+
+* Reflog
+
+The =reflog= is  a record of changed to the tips of branches within nonbare repos.
+Every time an update is made to any ref, including HEAD, the reflog is updated to 
+record how that ref has changed. 

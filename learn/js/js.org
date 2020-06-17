@@ -1,0 +1,366 @@
+#+TITLE: Javscript Notes
+#+OPTIONS: toc:2
+#+STYLE: <style>pre.src { width: 80%; margin: 0 auto; }</style>
+* Basics
+
+** Data types
+*** Basic data types
+   - number
+   - string
+   - boolean
+   - null
+   - undefined
+*** Everything else is an object
+    - null is an object too!
+    - functions are objects, but of type function
+      #+BEGIN_SRC javascript
+      var x = function (){};
+      typeof x; // "function"
+      #+END_SRC
+
+** prototype
+   - functions have a prototype object
+   - regular objects has a secret to the prototype object of their constructor function. The links is established when the contructor function is called with new.
+   - Object literals are linked to Object.prototype, functions are linked to Function.prototype, which is linked to Object.prototype
+
+* Functions
+** Invocation patterns
+   In addition to the regular arguments, a function also receives two extra, implied arguments: /this/ and /arguments/
+   How a function is invoked determines what =this= means.
+
+*** Method Invocation Pattern
+    - When a function is stored as a property in an object, it's called a /method/.
+    - When a function is invoked by refinement ( . notation or [subscript] ), it's invoked as a method.
+    - When a function invoked as a method, /this/ is bound to the object, binding happens at invocation time.
+    - Methods that get their object context from /this/ are called /public methods/.
+*** Function Invocation Pattern
+    - Directly invoked, /this/ is bound to the /global object/.
+    - Problem: inner function won't have access to /this/ of outer function. Solution: define a variable (/that/ by convention) and assign /this/ to it in outer  function. Inner function have access to /that/.
+      #+BEGIN_SRC javascript
+      myObject.double = function ( ){
+          var that = this;  // workaround
+          var helper = function ( ){
+              that.value = add( that.value, that.value );
+          };
+          helper( );  // function invocation
+      };
+      #+END_SRC
+*** Constructor Invocation Pattern
+    - When invoked with the =new= operator, a function returns an object that has the secret link to the function's prototype object.
+    - /this/ is bound to the new object.
+    - Add methods to the function's prototype object will give public methods to created objects.
+*** Apply Invocation Pattern
+    - /apply/ can change function invocation context.
+    - /apply/ received two arguments: the first value will be bound to /this/ in the function, the second is an array containing parameters.
+
+
+* Object Creation
+** Factory Pattern
+
+#+BEGIN_SRC javascript
+var someone = createPerson(name, age){
+    var person = {
+        name: name,
+        age : age,
+        sayHi : function(){
+            alert(this.name + " says Hi!");
+        }
+    };
+    return person;
+}
+#+END_SRC
+
+  * Pros:
+    - Can create many similar objects
+  * Cons:
+    - No type identification.
+    - Methods are duplicate for each instance
+
+** Constructor Pattern
+
+#+BEGIN_SRC javascript
+function Person(name, age){
+    this.name = name;
+    this.age  = age;
+    this.sayHi = function(){
+            alert(this.name + " says Hi!");
+        }
+    };
+};
+
+var someone = new Person('Jack', 20);
+
+#+END_SRC
+
+  * No explicit object creation or return.
+  * Properties and methods are assigened to =this=.
+  * Function name capitalized to indicate it's a constructor.
+  * Instances have a =constructor= property that points back to consturctor function.
+  * Pros
+    - =instanceof= operator works => correct type identification.
+  * Cons
+    - Methods are still duplicated for each instance.
+
+** Prototype Pattern
+
+*** Pure Prototype Pattern
+
+#+BEGIN_SRC javascript
+function Person(){}
+Person.prototype.name = "Jack";
+Person.prototype.age  = 27;
+Person.Prorotype.sayHi = function(){ alert(this.name + " says Hi!"); };
+
+var someone = new Person();
+#+END_SRC
+
+Alternative prototype specification:
+#+BEGIN_SRC javascript
+function Person(){}
+
+Person.prorotype = {
+    constructor : Person, /* Default prototype has this property.
+                           * If not set here, Person.prototype will not have correct constructor prop.
+                           * Main difference between this and above code.
+                           * constructor defined this way is enumerable, default is not, see code below.
+                           */
+    name : 'Jack',
+    age  : 27,
+    sayHi : function(){ alert(this.name + " says Hi!"); }
+}
+#+END_SRC
+
+Prototype specification with not enumerable constructor property:
+#+BEGIN_SRC javascript
+function Person(){}
+Person.prototype = {
+    name : 'Jack',
+    age  : 27,
+    sayHi : function (){alert(this.name + " says Hi!");}
+}
+
+//ECMAScript 5 only! - restore the constructor
+Object.defineProperty(Person.prototype, "constructor", {
+    enumerable : false,
+    value: Person
+});
+#+END_SRC
+
+  * Most important feature of Javascript.
+  * Instances will share properties in prototype unless overwritten by instance properties.
+  * Constructor function has to be called with =new= operator.
+  * Instances created this way has internal _[ [prototype ] ]_ property referring to constructor's =prototype= object.
+  * =isPrototypeOf()= can be used to determin if an prorotype object is the prorotype of an instance.
+  * =Object.getProrotypeOf(obj)= can be used to get prototype of =obj=.
+  * =in= operator can be used to determine if a property can be accessed on an object, whether it's an instance property or prototype property.
+  * Instance method =hasOwnProperty()= can be used to filter instance properties from prototype properties.
+  * =Object.keys()= can be used to get all *enumerable*, *instance* properties of an object.
+  * Pros:
+    - Efficient properties/methods sharing.
+    - Easy to have instance properties/methods, just overwrite.
+  * Cons:
+    - Reference types of properties may be shared in undesired ways.
+    - Pure Prototype Pattern won't be able to customize instances by passing arguments.
+
+*** Combination Constructor/Prototype Pattern
+
+#+BEGIN_SRC javascript
+function Person(name, age){
+    this.name = name;
+    this.age  = age;
+}
+
+Person.prototype.sayHi = function(){ alert(this.name + " says Hi!"); }
+
+var someone = new Person('Jack', 27);
+#+END_SRC
+
+  * Instance properties are defined solely in constructor.
+  * Shared properties/methods are defined in constructor's prototype.
+  * Default pattern to use for defining reference types.
+
+*** Dynamic Prototype Pattern
+
+#+BEGIN_SRC javascript
+function Person(name, age){
+    this.name = name;
+    this.age  = age;
+    if ( typeof this.sayHi !== 'function'){  // only executes on first time
+        Person.prototype.sayHi() = function(){alert(this.name + " says Hi!"); }
+    }
+}
+#+END_SRC
+
+** Parasitic Constructor Pattern
+
+#+BEGIN_SRC javascript
+function Person(name, age){
+    var o = new Object();
+    o.name = name;
+    o.age = age;
+    o.sayHi = function(){alert(this.name + " says Hi!");}
+
+    return o;
+}
+#+END_SRC
+
+  * Create a constructor that simply wraps creation and return another object.
+  * Factory Pattern that looks like Constructor Pattern.
+  * Uses =new= in function call but doesn't create link between object and constructor's prototype.
+  * Uses =return= to explicitly return object.
+
+** Durable Constructor Pattern
+
+#+BEGIN_SRC javascript
+function Person(name, age){
+    var o = new Object();
+    // optionally define private properties/methods here
+
+    // attach methods
+    o.sayHi = function(){ alert(name + " says Hi!") }; // NOT 'this.name'!!!
+    o.getAge = function(){ return age; }
+    // return object  
+    return o;
+}
+
+var someone = Person('Jack', 27);
+someone.sayHi(); // Jack says Hi!
+#+END_SRC
+
+  * Looks like Factory pattern but quite different.
+  * No way to access =name=, =age= directly from returned instance object.
+  * Constructor is *not* called with =new=.
+  * Useful when dealing with secure execution environments.
+
+* Inheritance
+
+** Prototype chaining
+
+#+BEGIN_SRC javascript
+function SuperType(){
+    this.superProperty = true;
+}
+SuperType.prototype.getSuperProperty = function(){ return this.superProperty; }
+
+function SubType(){
+    this.subProperty = false;
+}
+SubType.prototype.getSubProperty = function(){ return this.subProperty; }
+
+var obj = new SubType();
+obj.getSuperProperty(); // true
+obj.getSubProperty();   // false
+#+END_SRC
+
+ * =SubType.prototype= is an SuperType instance which has its [ [prototype] ] linked to =SuperType.prototype=.
+ * SubType instances have their [ [prototype ] ] linked to =SubType.prototype= which is linked to =SuperType.prototype=.
+ * SubType instances have access to all properties/methods defined in =Subtype.prototype= *and* =SuperType.prototype=.
+ * All reference types inherit from =Object.prototype=
+ * Cons:
+   - Undesired shared reference properties can happen.
+   - No way to pass arguments to supertype constructor.
+
+** Constructor stealing
+#+BEGIN_SRC javascript
+function SuperType(name){
+    this.name = name;
+}
+
+function SubType(name, age){
+    SuperType.call(name);
+    this.age = age;
+}
+
+var obj = new SubType('Jack', 27);
+obj.name; // Jack
+obj.age;  // 27
+#+END_SRC
+
+  * Call the supertype constructor from within the subtype constructor.
+  * Use =call()= or =apply()= to change execution context to newly created object.
+  * Arguments can be passed too.
+  * Cons:
+    - Pure constructor stealing cannot share methods in supertype's prototype.
+
+** Combination Inheritance a.k.a. Pseudoclassical Inheritance
+#+BEGIN_SRC javascript
+function SuperType(name){
+    this.name = name;
+}
+// define SuperType methods
+SuperType.prototype.sayName = function(){alert("My name is " + this.name);};
+
+function SubType(name, age){
+    SuperType.call(this, name);
+    this.age = age;
+}
+// inherit from SuperType
+SubType.prototype = new SuperType();
+// Define more methods for SubType
+SubType.prototype.sayAge = function(){alert("I'm " + this.age + " years old.");};
+
+var obj = new SubType('Jack', 27);
+obj.sayName(); // My name is Jack
+obj.sayAge();  // I'm 27 years old.
+#+END_SRC
+
+  * Most frequently used inheritance pattern.
+  * Preserves behavior of =instanceof= and =isPrototypeOf()=
+  * Cons:
+    - Supertype constructor called twice: once to create prototype for subtype, and again called in subtype's constructor.
+    - Properties defined in subtype's prototype (instance of supertype) are masked by instance properties defined in constructor calls.
+
+** Prototypal Inheritance
+#+BEGIN_SRC javascript
+function beget(o){
+    function F(){};
+    F.prototype = o;
+    return new F();
+}
+
+var me = {
+    name: "Jack",
+    sayHi: function(){alert(this.name + " says Hi");}
+};
+
+var other = beget(me);
+other.sayHi(); // 'Jack says Hi!'
+other.name = 'Joe';
+other.sayHi(); // 'Joe says Hi!'
+#+END_SRC
+
+  * Direct object inheritance: inherit properties/methods from another object.
+  * Implemented as ECMAScript 5's =Object.create()=.
+  * Useful when there's no need for overhead of creating separate constructors but need an object to behave similarly to another.
+
+** Parasitic Inheritance
+
+#+BEGIN_SRC javascript
+function createAnother(original){
+    var another = Object.create(original);
+    another.doSomething = function(){ alert("does something");};
+
+    return another;
+}
+#+END_SRC
+
+  * Use Prototype Inheritance to create similar objects from existin object.
+  * Add new methods/properties.
+  * No code reuse.
+
+** Parasitic Combination Inheritance
+
+#+BEGIN_SRC javascript
+function inheritPrototype(subtype, supertype){
+    var proto = Object.create(supertype.prototype);
+    proto.constructor = subtype;
+    subtype.prototype = proto;
+}
+
+inheritPrototype(SubType, SuperType); // replace SubType.prototype = new SuperType();
+#+END_SRC
+
+  * Considered the most optimal inheritance paradigm.
+  * Supertype's constructor called only once.
+  * No duplicate properties in instance and prototype.
+  * Prototype chain is kept intact.

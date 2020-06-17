@@ -1,0 +1,15 @@
+#+TITLE: ErgoDox Flashing
+
+* KiiBohd/Input Club wiki
+  [[https://kiibohd.github.io/wiki/][Wiki]]
+
+* Flashing ErgoDox
+
+  1. [[https://configurator.input.club][Online configurator]]
+  2. Use Firmware Ver 'lts', download firmware
+  3. Unzip the downloaded file into a folder
+  4. Become =root=
+  5. Unplug the right half of ergodox
+  6. Use =Flash= key or press the flash switch to make left half go into flash mode, LED will be red
+  7. As =root= run =dfu-util -D left_kiibohd.dfu.bin=, keyboard LED will be green during the flash.
+  8. Repeat step 5 - 7 for right hand.

@@ -1,0 +1,94 @@
+#+TITLE: PDF file re-pack
+
+* Unpack PDF to individual pages.
+
+#+BEGIN_SRC shell-script
+
+pdftk original.pdf burst
+# pg_0001.pdf pg_0002.pdf ...
+
+#+END_SRC
+
+* Convert PDF pages to TIFF files
+
+#+BEGIN_SRC shell-script
+
+for x in *.pdf; do
+t=`echo $x | sed 's/pdf/tiff/'`;
+convert $x $t
+done
+
+# pg_0001.tiff pg_0002.tiff ...
+
+#+END_SRC
+
+* Cropping images to proper size
+
+Use a perl script to wrap around =convert= command to crop the proper area out.
+
+In this script each PDF page actually contains 4 book pages.
+
+The last step can also be a =convert= command that set / compress TIFF to jpg.
+
+#+BEGIN_SRC cperl
+#!/usr/bin/perl
+use strict;
+use warnings;
+use File::Slurp qw(slurp write_file);
+
+my $width = 885;
+my $height = 1230;
+my $x_delta = 800;
+my $y_delta = 1270;
+my $x0 = 180;
+my $x1 = $x0 + 850;
+my $y0 = 165;
+my $y1 = $y0 + 1270;
+my $point_of = [[\$x1, \$y0], [\$x0, \$y0], [\$x1, \$y1], [\$x0, \$y1]];
+
+my $size = $width . 'x' . $height;
+my $page = slurp('page.log');
+chomp $page;
+
+foreach my $i (0 .. 3){
+    my $answer = '';
+    while ( $answer !~ /^y/i) {
+        my $x = ${ $point_of->[$i][0] };
+        my $y = ${ $point_of->[$i][1] };
+
+        my $test_cmd = qq{convert P$page.tiff -crop $size+$x+$y test.tiff};
+        `$test_cmd && qiv -ft test.tiff`;
+        my $page = $i + 1;
+
+        print "page $page\'s origin at ($x, $y), looking good? (y/n) ";
+        $answer = <STDIN>;
+        chomp $answer;
+        if ( $answer !~ /^y/i) {
+            print "New origin's x? ";
+            ${ $point_of->[$i][0] } = <STDIN>;
+            chomp ${ $point_of->[$i][0] };
+            print "New origin's y? ";
+            ${ $point_of->[$i][1] } = <STDIN>;
+            chomp ${ $point_of->[$i][1] };
+        }
+    }
+    `mv test.tiff page/P$page.$i.tiff`;
+}
+$page++;
+write_file('page.log', $page);
+
+#+END_SRC
+
+* Convert images to PDF
+
+#+BEGIN_SRC shell-script
+
+# some times convert will run out of memory if there are too many images
+convert P01*.jpg v11.pdf
+convert P02*.jpg v12.pdf
+# ...
+
+# use pdftk to join different PDFs to a single one
+pdftk v1[1234].pdf cat output v1.pdf
+
+#+END_SRC

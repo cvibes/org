@@ -1,0 +1,87 @@
+#+TITLE: Filters
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+
+Filters are defined data transformation that are not tied to controllers or views. 
+It processes data passed from scopes to directives, without changing source data.
+
+Filters are just functions with a special syntax in AngularJS. 
+={{ data | filter:arg1:arg2 }}= is basically equivalent to ={{ filter(data, arg1, arg2) }}=.
+
+Filters don't require registration of functions on a scope, and the syntax is more 
+convenient.
+
+
+* Built-in filters
+
+   - =currency=
+   - =date= ={{ person.birthday | date:'MM-dd-yyyy'}}=
+   - =number=
+   - =lowercase=, =uppercase=
+   - =json=
+   - =limitTo=, returns array shrunk to size
+   - =orderBy=
+     - basic usage: =items | sortBy:sortField=
+     - reverse order: =items | sortBy:'-sortField'=, or =items |orderBy:sortField:reverse=
+     - custom sort function
+       #+BEGIN_SRC javascript
+       $scope.myCustomSorter = function(item){
+         return item.expiry < 5 ? 0 : item.price;
+       }
+       // usage: products | orderBy:myCustomSorter
+       #+END_SRC
+   - =filter=, general purpose filtering utility, returns subset of an array.
+     - Select items in a collection that has substring in any field in simplest form.
+       #+BEGIN_SRC html
+         <!-- finds all items with 'Ford' in any field -->
+         <tr ng-repeat="item in collection | filter: 'Ford'">
+       #+END_SRC
+     - Combination of criteria
+       #+BEGIN_SRC javascript
+         filter: { make : 'Ford', model: 'Escape' }
+       #+END_SRC
+  
+     - =$= is a wildcard property name, which can be used in AND/OR matches.
+       #+BEGIN_SRC javascript
+         // finds items with 'Ford' anywhere AND year 2015
+         filter: { $: 'Ford', year: '2015' }
+       #+END_SRC
+     - Can use function to filter
+       #+BEGIN_SRC javascript
+         $scope.newFord = function(item){
+             return item.make === 'Ford' && item.year > 2010;
+         }
+         // ...
+         filter : newFord
+       #+END_SRC
+
+* Filter tips
+
+   - Use intermediate variable to save repeated use.
+     #+BEGIN_SRC html
+       ng-repeat="item in filteredItems = (items | filter:{make:'Ford', model:"F150"})"
+       <!-- ... -->
+       Total: {{filteredItems.length}}
+     #+END_SRC
+   - Access filter in javascript code
+     #+BEGIN_SRC javascript
+       // method 1: use the $filter service
+       module('myFilter', [])
+           .filter('testFilter', function($filter){
+               var limitToFilter = $filter('limitTo');
+               return function(input, limit){
+                   return limitToFilter(input, limit - 3);
+               };
+           });
+
+       // method 2: directly accessing filter by alias
+       module('myFilter', [])
+           .filter('testFilter', function(limitToFilter){
+               return function(input, limit){
+                   return limitToFilter(input, input - 3);
+               };
+           });
+     #+END_SRC
+
+     - *Don't* output HTML in filters
+     - *Don't* perform complex operations in filters
+     - Filters that can produce different results on same input can cause problems.

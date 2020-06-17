@@ -1,0 +1,167 @@
+#+TITLE: Files and Commits
+
+* =add=, =rm= and =mv=
+
+** =add= updates the index and add files to the tracked files.
+
+** =git rm <file>=
+
+ - If the file is /not tracked/, git will report an error.
+ - If the file is /committed/, git will remove it from the index _and_ working directory.
+
+   Use =git checkout HEAD -- <file>= to get the file back.
+
+ - If the file is /tracked/ but /not committed/
+   - If the file is modified but not staged, git will report an error.
+
+     Use =git rm -f <file>= to force remove file from index _and_ working directory.
+
+   - If the file is staged, git will report an error.
+
+     Use =git rm --cached <file>= to remove from index, but _not_ from working directory.
+
+     Use =git rm -f <file>= to force remove from index _and_ working directory.
+
+** =git mv <file_from> <file_to>=
+
+After moving or renaming, only tree objects get changed in object store, simplifying tracking.
+
+#+BEGIN_SRC shell-script
+  git mv file_from file_to
+
+  # the command above is equivalent to the commands below:
+  mv file_from file_to
+  git rm file_from
+  git add file_to
+
+  # to show history of renamed file, use
+  git log --follow file
+#+END_SRC
+
+* Identifying commits
+
+** Absolute Commit Names
+
+Each commit's hash identifier is globally unique and can be used as the most rigorous name.
+
+Many commands also accept sufficiently unique enough prefix as commit names.
+
+** =ref= and =symref=
+
+A ref is a SHA1 hash ID that refers to an object in store, usually a commit object.
+
+Local branch names, remote branch names and tags are all refs.
+
+Symrefs are names pointing to objects indirectly. Each symref has an explicit, full name that begins with /refs/ and stored hierarchically within =.git/refs=.
+
+Some special symrefs are maintained by git automatically, they can be used anywhere a commit is used: =HEAD=, =ORIG_HEAD=, =FETCH_HEAD=, =MERGE_HEAD=
+
+** Relative Commit Names
+
+ - =^= is used to select a different parent in a merge. 
+
+   Given a commit =C=, =C^1= is the first parent, =C^2= is the second parent, and so on.
+
+ - =~= is used to go back before an ancestral parent and select a preceding generation. 
+
+   Give a commit =C=, =C~1= is the first parent, =C~2= is the first grand parent, etc.
+
+ - =C^1= ==== =C~1=
+
+   =C^= ==== =C^1=
+
+   =C~= ==== =C~1=
+
+   =C^^= ==== =C^1^1= ==== =C~2= ==== =C~~=
+
+* Commit History
+
+** Use =git log= to view commit history.
+
+  - Default will print whole commit history with commit messages.
+  - =-2= option will only print last two commits.
+  - =--pretty== =[oneline|short|medium|full]= can customize amount of printed information.
+  - =-p commit= will print the patch introduced by commit.
+  - =--graph= will print a merge graph.
+
+** =git show=
+
+  - use =git show commit= to view specific commmit
+  - use =git show branch:file= to view file in the branch.
+
+** Commit Ranges
+
+A range is denoted by double dots, as in =start..end=, where start and end are commits.
+
+This range specifies all commits on the commit graph that can be reach by =end= but _not_ by =start=.
+
+** Find Commits
+
+ - =git help bisect=
+ - =git help blame=
+ - /pickaxe/: =git log -Sstring file=
+
+   Searches back through the history of a file's diffs for the given /string/.
+
+* Altering commits
+
+** Reasons to alter commits
+ - Fix a commit problem.
+ - Decompose a large commits into a number of smaller ones.
+ - Combine some small commits into a single one.
+ - Reorder commits so it doesn't break build requirement or to be more logical.
+ - Remove debug code committed accidentally.
+
+*Feel free to alter commits in private repository, /NEVER/ alter commits that
+have a copy owned by other people.*
+
+** =git reset=
+
+Establish and recover known states of the HEAD, index and working directory.
+
+*** =git reset --soft commit=
+
+Changes the HEAD ref to point to the given commit. Contents of index and working
+directory is not changed.
+
+*** =git reset --mixed commit=
+
+Changes HEAD to point to =commit=; index modified to align with the tree structure
+named by =commit=; working directory unchanged. This is the /default/ for =git reset=.
+
+*** =git reset --hard commit=
+
+HEAD reference, index and working directory are all updated. 
+
+** =git cherry-pick=
+
+Pick a commit from a different branch and apply to current HEAD, resulting in a new
+commit that's similar to the original commit.
+
+Can use range to apply multiple commits.
+
+** =git revert=
+
+Reverse of =cherry-pick=, make a new commit whose effect is to revert some earlier
+commit.
+
+** =git commit --amend=
+
+Alter the most recent commit, edit/add/delete files or adjust commit authors, messages,
+etc.
+
+* Rebase
+
+=git rebase= is used to alter where a sequence of commits are based. 
+
+=git rebase master topic= will apply the sequence of commits in topic since where the
+two branches diverge to master branch's HEAD, making current master HEAD the new
+merge base. Also called 'forward-porting'.
+
+If there are conflicts when applying the commits, =git= will suspend the process
+so conflict can be resolved. After resolving, use =git rebase --continue= to continue
+applying following commits. Use =git rebase --skip= to skip certain commits and =git
+rebase --abort= to restore to the state before issuing the =git rebase= command.
+
+** =rebase= vs =merge=
+

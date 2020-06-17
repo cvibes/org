@@ -1,0 +1,93 @@
+#+TITLE: Sorting
+
+* Foundation
+
+The =sort= method will only refer to data through =less= and =exch=, listed below. Restriction
+data access to these two operations makes our code readable and portable, and makes it easier for
+us certify that algorithms are correct, to study performance and to compare algorithms. 
+
+When studying sorting algorithms, we count /compares/ and /exchanges/. For algorithms that do not
+use exchanges, we count /array accesses/.
+
+#+BEGIN_SRC java
+private static boolean less(Comparable v, Comparable w)
+{
+    return v.compareTo(w) < 0;
+}
+
+private static void exch(Comparable[] a, int i, int j)
+{
+    Comparable t = a[i];
+    a[i] = a[j];
+    a[j] = t;
+}
+#+END_SRC
+
+* Elementary sort
+
+** Selection Sort
+
+First, find the smallest item in the array and exchange it with the first entry. Then find the next smallest
+item and exchange it with the second entry. Continue until the entire array is sorted.
+
+*** Code
+
+#+BEGIN_SRC java
+/**
+ * Algorithm 2.1 Selection Sort
+ */
+public class Selection
+{
+    public static void sort(Comparable[] a)
+    {
+        int N = a.length;
+        for (int i = 0; i < N; i++){
+            int min = i;
+            for (int j = i + 1; j < N; j++)
+                if (less(a[j], a[min]) ) min = j;
+        }
+        exch(a, i, min);
+    }
+}
+#+END_SRC
+
+*** Performance
+
+Uses ~N^2/2 compares and N exchanges to sort an array of length N.
+
+For each item from 0 to i-1, there's one exchange and N-i-1 compares.
+
+*Running time is insensitive to input*.  Each pass has to go through all remaining items to find 
+next smallest item.
+
+*Data movement is minimal.*  Number of exchanges is a linear function of the array size, each pass
+exchange once. 
+
+** Insertion Sort
+
+Consider each item and move it into its proper place among the already considered.
+
+*** Code
+
+#+BEGIN_SRC java
+/**
+ * Algorithm 2.2 Insertion Sort
+ */
+public class Insertion
+{
+    public static void sort(Comparable[] a)
+    {
+        int N = a.length;
+        for (int i = 1; i < N; i++)
+            for (int j = i; j > 0 && less(a[j], a[j-1]); j--)
+                exch(a, j, j-1);
+    }
+}
+#+END_SRC
+
+*** Performance
+
+Uses ~N^2/4 compares and ~N^2/4 exchanges to sort array of lenght N on average. Worst case
+is ~N^2/2 compares and ~N^2/2 exchanges; best case is N-1 compares and 0 exchanges.
+
+

@@ -1,0 +1,46 @@
+#+TITLE: Set up Arduino
+
+* Arduino IDE version and setup
+
+  - Debian/Raspbian has Arduino IDE version =2:1.0.4=, which is basically 1.0.4, quite low and does not come with Board Manager / Library Manager
+  - Use Arduino's Download or Hourly build is a much better option. [[https://www.arduino.cc/en/Main/Software][Arduino Download]] [[https://www.arduino.cc/download.php?f=/arduino-nightly-linux64.tar.xz][Hourly Build]]
+  - Untar the download package and run the =install.sh=
+  - If not installed by root and linked to =/usr/local/bin= set up a link in PATH
+
+* Use Arduino to program Uno
+
+  - If the board is not included in the default board list
+    1. =File > Preferences > Additional Boards Manager URL=
+    2. Add new Boards Manager URL, typically a JSON link.
+    3. After saving, open =Tools > Board > Boards Manager= and select the right board to install.
+    4. Restart Arduino
+  - Select the right board in =Tools > Board= menu.
+  - Connect the board and make sure =Tools > Port= is set to the right board
+  - Program in the Arduino Editor
+  - Use =Tools > Upload= or the =Upload= button to compile/upload to board.
+
+* Use Emacs + Arduino.mk
+
+  - [[https://github.com/bookest/arduino-mode/blob/master/arduino-mode.el][Download arduino-modelel]] and require it in Emacs
+  - In Debian, =apt-get install arduino-mk=
+  - For each project, include a =Makefile= in the same directory.
+    #+BEGIN_SRC Makefile
+    BOARD_TYPE = uno
+    ARDUINO_LIBS =
+    MONITOR_PORT = /dev/ttyACM1
+    include /usr/share/arduino/Arduino.mk
+    #+END_SRC
+  - Use =M-x compile= and =make -k upload= to compile/upload
+
+* Libraries
+
+** Arduino IDE
+
+  - Use =Sketchbook > Manage Libraries...= menu to search and download libraries.
+  - Use =Sketchbook > Add Zip Library...= to add a library zip
+
+** Arduino-mk
+
+  - Arduino-mk uses =sketchbook.path= option in =.arduino/preferences.txt= to determine where sketchbook is.
+  - Arduino-mk will look libraries under =libraries= directory under sketchbook.
+  - =ARDUINO_LIBS= in =Makefile= will tell Arduino-mk what libraries to look for.

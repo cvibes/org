@@ -1,0 +1,162 @@
+#+TITLE: Branch, Diff, and Merge
+
+* Branch
+
+** Naming
+
+ - forbidden chars in branch names: =^=, =~=, =:=, =?=, =*=, =[=
+ - =..= cannot appear anywhere in the name
+ - =/= _can_ be used for creating hierarchical branch names.
+ - =.= cannot appear at start of name or after =/=
+
+** Using branches
+
+#+BEGIN_SRC shell-script
+  # create a new branch called eTracker/123456
+  git branch eTracker/123456
+
+  # switch to new branch
+  git checkout eTracker/123456
+
+  # list branch names
+  git branch
+
+  # viewing branches
+  git show-branch
+
+  # create a new branch 'eTracker/223344' from 'master' branch
+  git branch eTracker/223344 master
+
+  # view only the new branches
+  git show-branch eTracker/*
+
+  # create and switch to new branch at same time
+  git checkout -b eTracker/654321
+
+  # delete branch: cannot delete the branch you checkout
+  git checkout master
+  git branch -d eTracker/654321
+
+  # detached HEAD branch, a checkout that's not the HEAD of the branch
+  git checkout v1.6.0
+  git branch
+  ## * (no branch)
+  ##   master
+
+  # to make commits to this detached HEAD, first create a new branch
+  git checkout -b newdev
+
+  # to abandon the detached HEAD, simply checkout branch
+  git checkout v1.6.0
+  git branch
+  ## * (no branch)
+  ##   master
+  git checkout master
+  git branch
+  ## * master
+#+END_SRC
+
+* Diff
+
+| =git diff=                      | shows difference between working directory and the index  |
+| =git diff commit=               | shows difference between working directory and the commit |
+| =git diff --cached commit=      | shows difference between the index and the commit         |
+| =git diff commit1 commit2=      | shows difference between two commits                      |
+| =git diff commit1 commit2 file= | shows only difference in file between the two commits     |
+
+
+* Merge
+
+#+BEGIN_SRC shell-script
+  # merge the branch 'dev' into 'master'
+  git checkout master
+  git merge dev
+#+END_SRC
+
+** Conflicts
+
+If there are no conflicts, the merge is finished automatically; otherwise
+ =git= will report errors and mark the conflicts in affected files, after
+ the conflicts are resolved and next commit will merge the branches.
+
+*** Locating conflicted files
+
+#+BEGIN_SRC shell-script
+  # list unmerged files
+  git ls-files -u
+#+END_SRC
+
+*** Inspecting conflicts
+
+ - =git diff= in merge conflicts will show changes against _both_ parents
+ - =git diff HEAd= ==== =git diff --ours= shows changes against current branch head
+ - =git diff MERGE_HEAD= ==== =git diff --theirs= shows changes against merged branch
+ - =git diff --base= ==== =git diff $(git merge-base HEAD MERGE_HEAD)=
+ - =git= stores three versions of the conflicted files: merge base, "our" version 
+   and "their" version, with stage number =1=, =2= and =3= repectively. 
+
+   #+BEGIN_SRC shell-script
+     # compare difference between merge base and MERGE_HEAD version
+     git diff :1:file :3:file
+   #+END_SRC
+
+ - =git diff= won't show sections exists in one version but no in the other version.
+
+*** Finishing merge
+
+After resolving the conflicts make a commit, this is the =merge commit=.
+
+ - There's a =Merge: = line in commit object, with reference to parents
+ - Automatically generated commit log message lists comflicted files.
+ - Combined diff is recorded too.
+
+*** Aborting/Restarting a merge
+
+#+BEGIN_SRC shell-script
+  # to abort a merge
+  git reset --hard HEAD
+
+  # abort or discard the merge after it has finished
+  git reset --hard ORIG_HEAD
+
+  # to return to the original conflict state after a botched conflict resolution
+  git checkout -m
+#+END_SRC
+
+
+** Merge Strategies
+
+*** =Already up-to-date=
+
+When all commits from merging branch are in target branch, target branch is said to
+be =Already up-to-date=, no merge commit will happen, even if target branch has
+advanced on its own.
+
+*** =Fast-forward=
+
+Inverse of =Already up-to-date=, when target HEAD is already present and fully
+represented in merging branch, =git= simply put new commits from merging branch
+to HEAD and move HEAD to last new commit.
+
+*Fast-forward merge does _/not/_ introduce actual commits*
+
+
+*** Resolve
+
+Operates on only two branches, locating the common ancestor as merge basis and 
+perform a direct /three-way merge/ by applying the changes from the merge base 
+to the tip of the other branch HEAD onto the current branch.
+
+*** Recursive
+
+Also works only on two branches. In branches with criss-cross merges, e.g. 
+commits =a= and =b= are both ancestors of HEAD and MERGE_HEAD, git will merge
+ =a= and =b= first to a temporary merge base and use that merge base to merge
+ HEAD and MERGE_HEAD. This can go on recursively for =a= and =b=.
+
+*** Octopus
+
+Merges more than two branches simultaneously. It just uses =recursive strategy=
+multiple times. However, *it cannot handle a merge that requires any form of 
+manual conflict resolution*. In that case users are forced to do a series of 
+normal merges, resolving the conflicts one step a time.

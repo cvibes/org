@@ -1,0 +1,55 @@
+#+TITLE: Responsive Web Design (RWD)
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+#+OPTIONS: toc:1
+
+* Main Ideas
+
+Make a page change its layout based on the width of the browser screen.
+
+  - Flexible grids for layout
+  - Flexible media for images/videos
+  - Use media queries to create different styles for different screen widths.
+
+To preventing mobile browsers from zooming out on the page, use this directive:
+
+#+BEGIN_SRC html
+<meta name="viewport" content="width=devide-width">
+#+END_SRC
+
+* Strategies
+
+  - Adjust columns
+  - Flexible widths
+    Change from a fixed-width design to fluid, flexible layout.
+  - Tighten up white spaces
+  - Adjust font sizes
+    Headlines shouldn't be too large, body text can be a bit larger.
+  - Changing navigation menus
+    - [[http://css-tricks.com/convert-menu-to-dropdown/]]
+    - [[http://exisweb.net/incredibly-useful-list-of-responsive-navigation-and-menu-patterns]]
+    - [[http://bradfrostweb.com/blog/web/complex-navigation-patterns-for-responsive-design/]]
+  - Hide content on mobile devices
+  - Use background-image for images, which can be defined in different style sheets
+
+* Media Queries
+
+** In links
+
+#+BEGIN_SRC html
+<link href="css/medium.css" rel="stylesheet" media="(min-width:481px) and (max-width:768px)">
+#+END_SRC
+
+** Embedded media query
+
+#+BEGIN_SRC css
+@media (max-width:480px) {
+  body { /* ... */ }
+  .style { /* ... */ }
+}
+#+END_SRC
+
+* Misc Notes
+
+  - HTML source order is important, sidebars can be displayed before main content in mobile devices
+  - Reset the box model, =box-sizing: border-box;=
+  - Use Chrome Developer Tools -> Phone Icon to test views on mobile devices

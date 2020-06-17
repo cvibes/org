@@ -1,0 +1,269 @@
+#+TITLE: ExpressJS
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+
+* Basics
+** Setting
+   - env
+     - automatically set by Express from =process.env.NODE_ENV=
+     - if not set, set to 'development'
+     - Most common values: =development=, =test=, =stage=, =preview=, =production=
+     - used for Express to determine certain settings, e.g. cache.
+   - view cache
+
+     =false= means templates are read for each request, default for =development=, =true= for =production=.
+   - view engine
+
+     set view engine type and extension
+   - views
+
+     absolute path to templates dir. default to =views= of project root.
+
+   - trust proxy
+
+     =true= if working behind reverse proxy
+
+   - jsonp callback name
+
+     JSONP is alternative to CORS to solve AJAX calls from different domain.
+
+   - json replacer
+
+   - json paces
+
+   - case sensitive routing
+
+   - strict routing
+
+     deals with trailing slashes
+
+   - x-powered-by
+
+     =false= to remove X-Powered-By HTTP header
+
+   - etag
+
+   - query parser
+
+     =false=, =true=, =simple=, default to =extended=
+
+   - subdomain offset
+  
+** Middleware
+
+An Express/Connect middleware is a function with three arguments: =request=, =response= and =next=. =next= is the passed in by Express, it is customary to be call =next()= as the last line in the middleware.
+
+Applying middleware is by =app.use()=, which takes an optional mount point as first argument, and middleware name.
+
+#+BEGIN_SRC javascript
+  app.use(function(req, res, next){
+      // middleware logic
+      return next();
+  });
+
+  var myAdminMiddleWare = require('./myAdminMiddleWare');
+  app.use('/admin', myAdminMiddleWare);
+
+  app.use('/css', express.static(__dirname + '/public/css'));
+#+END_SRC
+
+   - =compression=
+
+   - =morgan=
+
+     Logs requests and other information.
+
+     #+BEGIN_SRC javascript
+     var logger = require('morgan');
+     //short hand for common usage, other shorthand options:
+     // [ combined short tiny dev ]
+     app.use(logger('common'));
+     // individual format options
+     app.use(logger(':method :url :status :res[header] :req[header] :response-time :date :referrer :user-agent'));
+     #+END_SRC
+
+   - =body-parser=
+
+     Processes incoming data into Javascript objects, including:
+     - =json()= processes JSON data. Options include:
+     - =urlencoded()= processes data like name=val1&name2=val2
+     - =raw()= returns body as raw buffer.
+     - =text()= returns body as string.
+
+   - =cookie-parser=
+   - =express-session=
+   - =csurf=
+   - =express.static= / =serve-static=
+   - =connect-timeout=
+
+     Sets a time limit to send 503 error.
+
+   - =errorhandler=
+
+     Basic error handling. Should use customized handlers in production.
+
+     Error handler middleware takes _4_ params, first is error object.
+   - =method-override=
+
+     Enable HTTP methods not supported by web server.
+   - =response-time=
+ 
+     Adds =X-Response-Time= header, takes digits number as only param.
+   - =serve-favicon=
+   - =serve-index=
+
+     Enables listing directory.
+   - =vhost=
+
+     Enables using different routing logic for different domains.
+   - =connect-busboy=
+
+     Ford parser. Enables using form fields, uploaded files, etc.
+
+
+* Routing
+
+** app.param()
+
+Whenever an request URL matches a pattern in a route, =app.param()= is called. A callback function can be used to process this information.
+
+By defining =app.param()= once, it'll be triggered for every route that has the matching URL param name. This is very useful in situation where same parameter needs to be extracted _multiple_ times.
+
+#+BEGIN_SRC javascript
+
+app.param('username', function(req, res, next, username){
+    // find user info by DB query or whatever...
+    var user = findUser(username);
+    // stores user info in req obj for downstream middlewares
+    req.user = user;
+    return next();
+});
+
+app.get('/api/:username', function(req, res, next){
+    // now we can be sure req.user is populated
+    return res.render(req.user);
+});
+
+app.get('/api/admin/:username', function(req, res, next){
+    // same here
+    return res.render('admin', user);
+}
+#+END_SRC
+
+
+** app.VERB()
+
+   - Verbs include [ =GET= =POST= =PUT= =DELETE= =PATCH= =OPTIONS= =HEAD= ]
+   - Use named functions to make code more clear:
+
+     #+NAME: grouping actions in a route
+     #+BEGIN_SRC javascript
+       /* global app */
+       var auth = function(){ /* ... */ };
+       var getUser = function(){ /* ... */ };
+       var getStory = function(){ /* ... */ };
+
+       app.get("/user", auth, getUser);
+       app.get("/admin", auth, getUser, getStory);
+
+       // or even better, group them
+       var admin = [auth, getUser, getStory];
+       app.get('/admin', admin);
+     #+END_SRC
+
+** Router
+
+=express.Router()= is a mini app to separate routing from main app logic. It has all the routing capabilities of =app=.
+
+#+BEGIN_SRC javascript -n
+  // create router object
+  var router = express.Router();
+  // Router has param method, same as app
+  router.param('itemId', function(){ /* ... */ });
+  // set up routing
+  router
+  .route('/items/:itemId')       // itemId already processed by param()
+  .get(function(){ /* ... */ })
+  .post(function(){ /* ... */ })
+  .delete(function(){ /* ... */ }
+  .put(function(){ /* ... */ });
+
+  app.use('/', router);  // mount
+#+END_SRC
+
+
+** Request Object
+
+   - =request.query=: query string params, e.g. =?type=book&time=now=
+   - =request.params=: URL path params, e.g. =/user/:id/:title/:status=
+   - =request.body=: request body data
+     
+     Need to apply =body-parser= middleware, which has =json()= and =urlencoded()= methods.
+     #+BEGIN_SRC javascript
+     var bodyParser = require('body-parser');
+     app.use(bodyParser.json());
+     #+END_SRC
+   - =request.route=: route path
+   - =request.cookies=: cookie data
+   - =request.signedCookies=
+   - =request.header()=, =request.get()=: headers
+
+** Response Object
+*** Essential methods
+
+   - =response.render()=
+
+     Takes javascript object to passs to template.
+   - =response.locals()= <<res.local>>
+   
+     Set key/value pairs to be rendered, so set data can be separated from rendering.
+   - =response.set()=
+
+     Set HTTP headers.
+     =res.end()= does not automatically set headers like status code or content type.
+   - =response.status()=
+   - =response.send()=
+
+     Send content with automatically generated HTTP headers, e.g. Content-Length, ETag, Cache-Control etc.
+     It consumes all input, can be used for string, object, array and buffer.
+   - =response.json()=
+   - =response.jsonp()=
+   - =response.redirect()=
+
+*** Streaming
+
+Use =pipe= to connect a stream to =response= or use stream's =.on('data')=, =on('end')= handlers to stream large data.
+
+** App-wide properties
+
+*** =app.locals=
+
+Similar to [[res.local][res.locals]] but makes its properties available in *all* templates.
+
+*** =app.render()=
+
+Produce HTML *not* for response, but for other processes to consume, e.g. email.
+
+*** =app.mount()=
+
+Returns sub-app mount point.
+
+
+* Testing
+
+** Concepts
+
+   - =assertion=: logical statement to test expressions.
+   - =test case=: One or more assertions that test a particular concept.
+   - =test harness=: a program that runs tests and collates output.
+   - =fixture=: Test data that usually prepared before tests are run.
+   - =mock=: an object that simulates another object, usually used to replace I/O operations.
+   - =stub=: replacement method for a functionality during tests.
+
+** Middleware testing using promises
+
+Reference: http://www.slideshare.net/morrissinger/unit-testing-express-middleware
+
+   1. Use node-mocks-http/express-mocks-http to get mock request/response objects.
+   2. Middleware returns a promise instead of directly returning next() call.
+   3. Routing uses then/reject to call next()/error handling.
+   4. Testing code uses then/rejct to test different scenarios.

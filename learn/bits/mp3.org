@@ -1,0 +1,30 @@
+#+TITLE Create MP3s from APE or CD
+
+* APE to MP3s
+
+ 1. APE to WAV
+    #+BEGIN_SRC shell-script
+    ffmpeg -i CD_image.ape 1.wav
+    #+END_SRC
+ 2. Split WAV and encode to FLAC using CUE file
+    #+BEGIN_SRC shell-script
+    shntool split -f CD_image.cue -o flac -t '%n - %p - %t' 1.wav
+    #+END_SRC
+ 3. Transcode FLAC to MP3
+    #+BEGIN_SRC shell-script
+    flac -c -d 1.flac | lame -V0 --add-id3v2 --tl 'Album Title' --ta 'Artists' --tt 'Song title' --tn '1/14' - 01-album-song.mp3
+    #+END_SRC
+ 4. Add image to ID3v2 tag.
+    #+BEGIN_SRC shell-script
+    eyeD3 --add-image 'front.jpg:FRONT_COVER' *.mp3
+    #+END_SRC
+
+
+* CD to MP3s
+
+  1. Use =cdparanoia= to rip CD
+     #+BEGIN_SRC shell-script
+     cdparanoia -B
+     #+END_SRC
+
+  2. See steps 3 - 4 in the section above.

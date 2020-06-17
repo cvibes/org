@@ -1,0 +1,24 @@
+#+TITLE Set up Emacs for Racket/Scheme Programming
+
+* Racket Programming
+
+  [[https://docs.racket-lang.org][Online Docs]]
+
+
+* Geiser
+
+  Geiser is a collection of Emacs major and minor modes that works with one 
+  or more Scheme imterpreters. It is an Emacs environment to hack and have
+  fun in Scheme. 
+
+** Installation
+
+   Use =package-install-package= to install =geiser= from =melpa=.
+
+** Run
+
+   In Emacs, =M-x run-geiser= and select racket as the scheme implementation.
+
+** Load package
+
+   In racket REPL, =,enter slideshow= will load the =slideshow= package.

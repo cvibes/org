@@ -1,0 +1,137 @@
+#+TITLE: AngularJS Services
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+
+* Concepts
+
+  A =service= in AngularJS is an _singleton object_ that can be _injected_ into
+  other services/modules/functions. Services *do not use scopes*. It's built on
+  top of controllers to directly interact with DOM.
+
+  It can be any javascript object, including functions.
+
+* Creation
+
+All services are created by Angular's =$provide= service. It registers a name 
+with a constructor function. In the case of =$provider=, the constructor function
+ is defined on the =$get= propery. The whole function given to =provider= is called
+a =Service Provider= and can be referred as the service name plus =Provider= suffix.
+
+#+BEGIN_SRC javascript
+myMod.config( function($provide) {
+  $provide.provider('greeting', function(){
+    this.$get = function() {
+      return function(name){
+          alert("Hello " + name);
+      };
+    };
+  });
+});
+#+END_SRC
+
+These shortcuts methods are *100% equivalent* to the definition above:
+
+#+BEGIN_SRC javascript
+  myMod.provider('greeting', function() {
+    this.$get = function() {
+      return function(name) {
+        alert("Hello " + name);
+      };
+    };
+  });
+
+  myMod.factory('greeting', function() {
+    return function(name) {
+      alert("Hello " + name);
+    };
+  });
+
+  myMod.service('greeting', function() {
+    return function(name) {
+      alert("Hello " + name);
+    };
+  });
+
+  myMod.value('greeting', function() {
+    return function(name) {
+      alert("Hello " + name);
+    };
+  });
+#+END_SRC
+
+Main difference between =provide= and shortcut methods =factory=, =service=, =value= 
+are that =provide= allows a lot of configuration. 
+
+Angular run an app in two phases: =config= and =run=. The =config= phase sets up
+any providers (as well as directives, controllers, filters, etc) as necessary. The
+=run= phase is when Angular compiles DOM and starts the app.
+
+=Module='s =.config= and =.run= methods are called during each of the phases. They 
+are injectable, but during the =config= phase *only* _providers_ can be injected.
+When a service provider is defined that provides service '=something=', it's named
+=somethingProvider= with the =Provider= suffix. This can then be injected into
+the =.config= function, which runs before application starts.
+
+* Dependency Injection (DI)
+
+** Declaration
+
+** Injection
+
+Injection are performed by the =$injector= service. It's responsible to create
+instances of serivces. =$injector= makes sure only a single copy of service object
+is created for each service. Its =.get= method can return the service object, while
+its =.invoke= method can inject services into the function passed in.
+
+** Service visibility.
+
+All services of an application are compiled and merged into a single namespace, which
+means any service/module in the app can declare dependency on any service. 
+
+* Communication between services
+
+  Communication between services are fundamentally different from that of controllers.
+
+  - List other services as dependencies.
+  - Use event-emitter module imported from NodeJS
+
+** 
+
+* Testing
+
+A simple service:
+
+#+BEGIN_SRC javascript
+  angular.module('archive', [])
+      .factory('msgArchive', function(){
+        var msgArchives = [];
+        return {
+          archive: function(msg){
+            msgArchives.push(msg);
+          },
+          getArchived: function(){
+            return msgArchives;
+          }
+      };
+  });
+#+END_SRC
+
+Test code:
+
+#+BEGIN_SRC javascript
+describe('message archive tests', function(){
+  var msgArchive;
+  beforeEach(module('archive'));            //make module archive available
+  beforeEach(inject(function(_msgArchive_){ // make service msgArchive available
+    msgArchive = _msgArchive_;
+  }));
+  it('should give access to archived msgs', function(){
+    var msg = { 'msg' : 'old msssage' };
+    msgArchive.archive(msg);
+    expect(msgArchive.getArchived()).toContain(msg);
+  });
+});
+#+END_SRC
+
+  - =module()= function is used in Jasmine to prepare services from this module for the  tests. It's *totally independent and different* from =angular.module()=.
+
+  - =inject()= injects services into tests. It strips leading and trailing pairs of underscores of the argument to retrieve dependencies.

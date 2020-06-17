@@ -1,0 +1,9 @@
+#+TITLE: Bits and Pieces
+
+* [[file:slime.org][Set up Slime]]
+* [[file:mp3.org][MP3s]]
+* [[file:samba.org][Samba]]
+* [[file:ergodox.org][ErgoDox]]
+* [[file:racket.org][Racket]]
+* [[file:lisp.org][Lisp]]
+* [[file:pdf.org][PDF Re-Pack]]

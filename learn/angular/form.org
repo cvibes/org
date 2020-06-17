@@ -1,0 +1,81 @@
+#+TITLE: Advanced Form
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+
+=form=, =input= are AngularJS directives that override built-in behavior HTML forms.
+
+* Inputs
+
+** text input
+  - All basic input directives support =requierd= attribute.
+  - Email/URL inputs require matching of regex before model is updated.
+  - Text-based directives allow specification of =ng-minlength=, =ng-maxlength= and =ng-pattern=
+
+** checkbox
+   #+BEGIN_SRC html
+     <input type="checkbox" ng-model="user.role" ng-true-value="admin" ng-false-value="user">
+   #+END_SRC
+
+** radio
+** select
+   =ng-options= usage:
+
+   #+BEGIN_SRC xml
+     <script>
+     var users = [
+       {lastName:'Smith', firstName: 'John', email: 'jsmith@example.com', sex: 'Male'},
+       {lastName:'Jones', firstName: 'Erica', email: 'ejones@example.com', sex: 'Female'}
+       ];
+     var countries = {
+       'US': 'United States',
+       'CN': 'China',
+       'JP': 'Japan'
+     };
+     function getFullName(user){ return user.firstName + " " + user.lastName; }
+     </script>
+     <!-- ng-options = "user.email for user in users" -->
+     <option value="object:1">jsmith@example.com</option>
+     <option value="object:2">ejones@example.com</option>
+
+     <!-- ng-options="getFullName(user) for user in users" -->
+     <option value="object:1">John Smith</option>
+     <option value="object:2">Erica Jones</option>
+
+     <!-- ng-options="user.email as getFullName(user) for user in users" -->
+     <option value="string:jsmith@example.com">John Smith</option>
+     <option value="string:ejones@example.com">Erica Jones</option>
+
+     <!-- ng-options="getFullName(user) as user.firstName group by user.sex for user in users" -->
+     <optgroup label="Male">
+       <option value="string:John Smith">John</option>
+     </optgroup>
+     <optgroup label="Female">
+       <option value="string:Erica Jones">Erica</option>
+     </optgroup>
+
+     <!-- ng-options="code as name for (code, name) in countries" -->
+     <option value="string:US">United States</option>
+     <option value="string:CN">China</option>
+     <option value="string:JP">Japan</option>
+   #+END_SRC
+
+* =ngModel=
+
+Each =ngModel= directive creates an instance of =ngModelController=, which is made
+available to all directives on the input element.
+
+=ngModelController= manages data binding between model and element display, also tracks
+if view value is valid and whether it's modified by input.
+
+=ngModelController= has two pipelines between view and model: =$formatter= formats
+model data for view display, and =$parser= for parsing view data into model data. If
+more than one directives are defined on an input, the pipelines are connected.
+
+=ngMOdelController= adds =ng-pristine= class to original data, and =ng-dirty= to
+modified data.
+
+* Submission
+
+If there is no =action= defined on form, form will not be submitted to server. 
+
+Appropriate action should be defined by using =ngClick= on a button or =ngSubmit= on
+the form.

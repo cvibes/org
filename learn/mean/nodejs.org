@@ -1,0 +1,124 @@
+#+TITLE: Node.JS
+#+HTML_HEAD_EXTRA: <style>pre.src {background-color: #333; color: #CCC; } li > p > code, li > code {font-size: medium; }</style>
+
+* Performance
+
+  - All Javascript code are executed on a _single_ thread
+    - It is possible to starve this thread by heavy computation
+  - All Javascript code are put on a _event loop_
+  - IO/network code are assigned to C code, managed by thread pool (libuv)
+
+* Modules
+
+** Module, exports and imports.
+NodeJS follows the CommonJS module specification:
+
+  - Each file is its own module.
+  - Each file has access to the current module definition using =module= variable.
+  - Export of current module is determined by =module.exports= variable.
+  - Use globally defined =require= to import modules.
+
+#+BEGIN_SRC javascript
+  /* foo.js */
+  module.exports = function(){
+      console.log("I'm foo!");
+  };
+
+  /* main.js */
+  var foo = require('./foo');
+  foo(); // I'm foo!
+#+END_SRC
+
+** =require=
+
+Three kinds of modules: *core modules*, *file modules*, *node_modules modules*, all use
+=require= to be imported.
+
+   - File modules are imported by using relative path to module file.
+     #+BEGIN_SRC javascript
+     var foo = require('../../foo.js');
+     #+END_SRC
+   - No global namespace polution: importer decides what name to be used for imported object.
+   - Can be conditionally imported.
+   - Process of import is blocking, not async. Statements after =require= are not executed until import is finished.
+   - Imported modules are cached.
+   - Since modules are cached, they share states between different imports.
+
+** Exports
+   - Each module has an implicit, default, empty =exports= object.
+   - NodeJS defines =exports= to be an alias to =module.exports=, *it only works* when attaching to it, not direct assignment.
+
+** Notes
+   - Don't use =.js= suffix in =require= calls, to be consistent with =RequireJS= convention.
+   - File modules have to be imported using relative path, no-path modules are reserved for core and node_modules modules.
+   - Import modules in a directory in =index.js=, then just import a single =index.js=.
+
+** Core modules
+
+*** =path=
+    - =path.normalize=, handles '=.=', '=..=', '=//='
+    - =path.join=, use OS specific path separators to join path.
+    - =path.basename=, =path.completePath=, =path.extname=
+*** =fs=
+*** =os= provides a few OS related utilities and properties.
+    - =os.totalmem()=, =os.freemem()=: memory
+    - =os.cpus().length=: number of CPUs
+*** =util=
+    - =util.log= logs a message with timestamp
+    - =util.format= formats a string.
+    - =util.isArray=, =util.isDate=, =util.isError=
+
+** External modules
+   If argument passed to =require= is not a relative path, =require= looks for core
+modules, and if not found, it check =node_modules= directory in current directory, 
+then =node_modules= directory in parent directory until it reaches root. In addition
+to =moduleName.js=, it also checks =moduleName/index.js=.
+
+* NPM
+
+** Basic usage
+  - =npm init= creates boiler plate =package.json= in current dir.
+  - =npm install package-name= installs packages, =--save= option saves package name in =package.json='s dependency section. 
+  - =npm install= installs/refreshes all dependency packages defined in =package.json=.
+  - =npm ls= lists all installed packages.
+  - =npm rm package-name= removes installed package.
+  - =npm outdated= checks latest compatible version for those listed in =package.json=
+  - =npm update= update installed packages to latest compatible version.
+
+** Package Versioning
+
+  - NPM pakcages follow =X.Y.Z= versioning scheme, where =X= is major version, =Y= is minor version, =Z= is patch level.
+  - Patch level must be incremented if _backward compatible fixes_ are introduced.
+  - Minor version must be incremented if _backward new features_ are introduced.
+  - Major version must be incremented  if _backward *incompatible* fixes/features_ are introduced.
+
+*** How to specify version in =package.json=
+  - Specify exact version: =@1.0.3=
+  - All patch versions of 1.0: =@~1.0.0=
+  - All minor versions of 1: =@^1.0.0=
+  - Current version or above: =>1.4.2=
+
+* Globals  
+
+  - =console=
+  - =setTimeout=, =setInternval=
+  - =__filename=, =__dirname=
+  - =process=
+    - use =process.argv= to access command line arguments.
+    - =process.nextTick()= takes a callback function and put it into the next cycle of event loop.
+  - =Buffer=
+    #+BEGIN_SRC javascript
+      var string = "hello world!";
+
+      // from string to buffer
+      var buffer = new Buffer(string, 'utf-8');
+
+      // from buffer to string
+      var roundTrip = buffer.toString('utf-8');
+      console.log(roundTrip); // hello world!
+    #+END_SRC
+  - =JSON=: =JSON.stringify=, =JSON.parse=
+  - =global= is equivalent to =window= object in browser, all other global varialbes are defined on this object.
+
+* Promises
+
