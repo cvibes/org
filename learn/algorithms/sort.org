@@ -90,4 +90,16 @@ public class Insertion
 Uses ~N^2/4 compares and ~N^2/4 exchanges to sort array of lenght N on average. Worst case
 is ~N^2/2 compares and ~N^2/2 exchanges; best case is N-1 compares and 0 exchanges.
 
+ - On a sorted array or if all keys are same, insertion sort takes /linear/ time.
+ - On a /partially sorted/ array (where number of inversions is less than a constant multiple of size), insertion
+   sort is efficient. Partially sorted array includes:
+   - each entry is not far from its final position
+   - a small array appended to a large sorted array.
+   - only a few entries that are not in place.
+ - Insertion works well for arrays of small size, or partially sorted arrays even if it's huge.
+
+** Shell Sort
+
+Shell sort is an extension of insertion sort that gains speed by allowing exchanges of array entries that are far
+apart, to produce partially sorted arrays that can be efficiently sorted, eventually by insertion sort.
 
