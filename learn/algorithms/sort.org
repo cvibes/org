@@ -100,6 +100,37 @@ is ~N^2/2 compares and ~N^2/2 exchanges; best case is N-1 compares and 0 exchang
 
 ** Shell Sort
 
-Shell sort is an extension of insertion sort that gains speed by allowing exchanges of array entries that are far
-apart, to produce partially sorted arrays that can be efficiently sorted, eventually by insertion sort.
+Shell sort is an extension of insertion sort that gains speed by allowing exchanges
+of array entries that are far apart, to produce partially sorted arrays that can be
+efficiently sorted, eventually by insertion sort.
 
+The idea is to rearrange the array to give it the property that taking every /h/th
+entry (starting anywhere) yields a sorted subsequence. Such an array is said to be
+/h/-sorted. By /h/-sorting for some large values of /h/, we can move items in the
+array long distances and thus make it easier to /h/-sort for smaller values of
+/h/. Using such a procedure for any sequence of values of /h/ that ends in 1 will
+produce a sorted array: this is shellsort.
+
+*** Code
+
+#+BEGIN_SRC java
+/**
+ * Algorithm 2.3 Shellsort
+ */
+
+public class Shell
+{
+    public static void sort(Comparable[] a)
+    {
+        int N = a.length;
+        int h = 1;
+        while ( h < N/3 ) h = 3 * h + 1;   // 1, 4, 13, 40, 121, 364, 1003...
+        while ( h >= 1){
+            for (int i = h; i < N; i++) Insert a[i] among a[i-h], a[i-2*h], a[i-3*h]...
+                for( int j = i; j >= h && less(a[j], a[j-h]); j -= h; )
+                    exch(a, j, j-h);
+        }
+        h = h/3;
+    }
+}
+#+END_SRC
