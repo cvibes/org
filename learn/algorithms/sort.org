@@ -134,3 +134,84 @@ public class Shell
     }
 }
 #+END_SRC
+
+*** Performance
+
+Shellsort is much faster than insertion sort and selection sort, the its speed advantage increases
+with the array size. But its exact running time is hard to analyze. It's better than quadratic, the 
+worst case number of compares is proportional to N^3/2.
+
+
+* Merge Sort
+
+/Merge sort/ is based on /merging/: combining two ordered arrays to make one larger ordered array.
+This naturally leads to a recursive solution: to sort an array, divide it into halves, sort the two
+halves recursively, and then merge the results. It guarantees to sort any array of N items in time
+proprotional to /NlogN/. Its prime disadvantage is that it uses extra space proportional to /N/.
+
+** Top-down merge sort
+
+#+BEGIN_SRC java
+/**
+ * Algorithm 2.4 Top-down merge sort
+ */
+public class Merge
+{
+    private static Comparable[] aux;     // auxiliary array for merges
+
+    private static void merge(Comparable[] a, int lo, int mid, int hi)
+    {   // Merge a[lo .. mid] with a[mid+1 .. hi]
+        int i = lo, j = mid + 1;
+        for (int k = lo; k <= hi; k++)    // Copy a[lo .. hi] to aux[lo .. hi]
+            aux[k] = a[k];
+
+        for( int k = lo; k <= hi; k++ )
+            if      (i > mid)              a[k] = aux[j++];
+            else if (j > hi)               a[k] = aux[i++];
+            else if (less(aux[j], aux[i])) a[k] = aux[j++];
+            else                           a[k] = aux[i++];
+    }
+
+    public static void sort(Comparable[] a)
+    {
+        aux = new Comparable[a.length];   // allocate space just once
+        sort(a, 0, a.length - 1);
+    }
+
+    public static void sort(Comparable[] a, int lo, int hi)
+    {   // sort a[lo..hi]
+        if ( hi <= lo ) return;
+        int mid = lo + (hi - lo) / 2;
+        sort(a, lo, mid);
+        sort(a, mid+1, hi);
+        merge(a, lo, mid, hid);
+    }
+}
+#+END_SRC
+
+** Bottom-up merge sort
+
+#+BEGIN_SRC java
+/**
+ *  Bottom-up Merge Sort
+ */
+public class MergeBU
+{
+    private static Comparable[] aux;
+    // merge code see above
+    public static void sort(Comparable[] a)
+    {
+        int N = a.length;
+        aux = new Comparable[N];
+        for (int sz = 1; sz < N; sz = sz + sz)
+            for (int lo = 0; lo < N-sz; lo += sz + sz)
+                merge(a, lo, lo+sz-1, Math.min(lo+sz+sz-1, N-1));
+    }
+}
+
+#+END_SRC
+
+** Performance
+
+Both top-down and bottom-up merge sort use between 1/2 * NlgN and NlgN compares and
+at most 6NlgN array accesses to sort an array of length N.
