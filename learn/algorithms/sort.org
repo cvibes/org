@@ -144,10 +144,11 @@ worst case number of compares is proportional to N^3/2.
 
 * Merge Sort
 
-/Merge sort/ is based on /merging/: combining two ordered arrays to make one larger ordered array.
-This naturally leads to a recursive solution: to sort an array, divide it into halves, sort the two
-halves recursively, and then merge the results. It guarantees to sort any array of N items in time
-proprotional to /NlogN/. Its prime disadvantage is that it uses extra space proportional to /N/.
+/Merge sort/ is based on /merging/: combining two ordered arrays to make one
+larger ordered array.  This naturally leads to a recursive solution: to sort an
+array, divide it into halves, sort the two halves recursively, and then merge
+the results. It guarantees to sort any array of N items in time proprotional to
+/NlogN/. Its prime disadvantage is that it uses extra space proportional to /N/.
 
 ** Top-down merge sort
 
@@ -213,5 +214,174 @@ public class MergeBU
 
 ** Performance
 
-Both top-down and bottom-up merge sort use between 1/2 * NlgN and NlgN compares and
-at most 6NlgN array accesses to sort an array of length N.
+Both top-down and bottom-up merge sort use between 1/2 * NlgN and NlgN compares
+and at most 6NlgN array accesses to sort an array of length N.
+
+*Improvements*
+
+  - Use insertion sort for small sub arrays. Cutoff at 15 can improve performance by 10% - 15%
+  - By testing if =a[mid]= is equal or less than =a[mid+1]=, call to =merge()= can be skipped.
+  - Alternate between input and auxiliary arrays can save copying time.
+
+* Quicksort
+
+Quicksort is mostly widely used sorting algorithm because it's easy to
+implement, works well for a variety of different kinds of input data, and is
+substantially faster than any other sorting method in typical applications. It
+sorts data in-place and requires time proprotional to /NlogN/ on the average. It
+has a shorter inner loop than most other sorting algorithms, which means that
+it is fast in practice as well as in theory. Its primary drawback is that it is
+fragile in the sense that some care is involved in the implementation to be sure
+to avoid bad performance. Mistakes can lead to quadratic performance.
+
+** Design
+
+Quicksort is a divide-and-conquer method for sorting. It works by /partitioning/
+an array into two subarrays, then sorting the subarrays independently. In
+mergesort, we break the array into two subarrays to be sorted and then combine
+the ordered subarrays to make the whole ordered array; for quicksort, we
+rearrange the array such that, when the two subarrays are sorted, the whole
+array is ordered. In mergesort, we do the two recursive calls /before/ working
+on the whole array; in quicksort, we do the two recursive calls /after/ working
+on the whole array. For mergesort, the array is divided as half; for quicksort,
+the position of the partition depends on the contents of the array.
+
+** Code
+
+#+BEGIN_SRC java
+public class Quick
+{
+    private static int partition(Comparable[] a, int lo, int hi)
+    {
+        int i = lo, j = hi + 1;
+        Comparable v = a[lo];
+        while ( true ){  // Scan right, scan left, check for scan complete, and exchange
+            while (less(a[++i], v) ) if ( i == hi ) break;
+            while (less(v, a[--j]) ) if ( j == lo ) break;
+            if ( i >= j ) break;
+            exch(a, i, j);
+        }
+        exch(a, lo, j);
+        return j;
+    }
+
+    public static void sort(Comparable[] a)
+    {
+        StdRandom.shuffle(a);
+        sort(a, 0, a.length - 1);
+    }
+
+    private static void sort(Comparable a[], int lo, int hi)
+    {
+        if ( hi <= lo ) return;
+        int j = partition(a, lo, hi);
+        sort(a, lo, j-1);
+        sort(a, j+1, hi);
+    }
+}
+#+END_SRC
+
+The partitioning process re-arranges the array to make the three conditions
+hold:
+
+  - The entry =a[j]= is in its final place in the array, for some j.
+  - No entry in =a[lo]= through =a[j-1]= is greater than =a[j]=.
+  - No entry in =a[j]= through =a[hi]= is less than =a[j]=.
+
+
+* Priority Queues
+
+The /binary heap/ is a data structure that can efficiently support the basic
+priority-queue operations. In a binary heap, the key in each node is larger than
+or equal to its two children. 
+
+A /complete binary tree/ starts at top, and proceed down the levels until all N
+nodes are filled.  It provides the opportunity to use a compact array
+representation that does not involve explicit links: root at position 1, its
+children at position 2 and 3, their children in positions 4, 5, 6 and 7, and so
+on. The parent of an node =k= is =int(k/2)=, and its children are =2k= and =2k+1=.
+
+When the priority of some node is increased, or a new node is added at the
+bottom of the heap, we have to travel /up the heap to restore the heap order.
+When the priority of some node is decreased, like replace the root node with a
+node that has a smaller key, we have to travel /down/ the heap.
+
+** Ideas of operations in binary heap
+
+*Bottom-up reheapify (swim)*
+
+In this case we keep exchanging the out-of-order node with its parent until we
+reach a node with a larger key, or the root.
+
+*Top-down reheapify (sink)*
+
+In this case we keep exchanging the out-of-order node with the /larger/ of its
+two children until we reach a node with both children smaller or equal, or the
+bottom.
+
+We use =swim()= and =sink()= to implement the operations in Priority Queues:
+
+*Insert*
+
+We add the new key at the end of the array, increment the size of the heap, then
+swim up through the heap with that key to restore the heap condition.
+
+*Remove the maximum*
+
+We take the largest item off the top, put the item from the end of the heap at
+the top, decrement the size of the heap, then sink down through the heap.
+
+** Code
+
+#+BEGIN_SRC java
+public class MaxPQ<Key extends Comparable<Key>>
+{
+    private Key[] pq;
+    private int N = 0;
+
+    private boolean less(int i, int j)
+    { return pq[i].compareTo(pq[j]) < 0; }
+
+    private void exch(int i, int j)
+    { Key t = pq[i]; pq[i] = pq[j]; pq[j] = t; }
+
+    private void swim(int k)
+    {
+        while ( k > 1 && less(k/2, k) ){
+            exch(k/2, k);
+            k = k/2;
+        }
+    }
+
+    private void sink(int k)
+    {
+        while ( 2*k <= N ){
+            int j = 2*k;
+            if ( j < N && less(j, j+1)) j++;
+            if ( !less(k, j) )  break;
+            exch(k, j);
+            k = j;
+        }
+    }
+
+    public boolean isEmpty()
+    { return N == 0; }
+
+    public int size()
+    { return N; };
+
+    public void insert(Key v)
+    {
+        pq[++N] = v;
+        swim(N);
+    }
+
+    public Key delMax()
+    {
+        Key max = pq[1];
+        exch(1, N--);
+        sink(1);
+        return max;
+    }
+}
+#+END_SRC
