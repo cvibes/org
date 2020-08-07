@@ -289,7 +289,7 @@ hold:
   - No entry in =a[j]= through =a[hi]= is less than =a[j]=.
 
 
-* Priority Queues
+* Heaps, Priority Queues and Heat Sort
 
 The /binary heap/ is a data structure that can efficiently support the basic
 priority-queue operations. In a binary heap, the key in each node is larger than
@@ -380,8 +380,58 @@ public class MaxPQ<Key extends Comparable<Key>>
     {
         Key max = pq[1];
         exch(1, N--);
+        pq[N+1] = null;
         sink(1);
         return max;
+    }
+}
+#+END_SRC
+
+** Heap Sort
+
+Heapsort has two phases: heap construction and sort down. In heap construction we 
+transform the array into the heap structure. The simple and naive way to do so is
+to go through the items from left to right, and use =swim()= to construct the heap.
+It would have =Nlog(N)= performance. A much better way to is to go from right to
+left and use =sink()= to construct the heap.
+
+*** Construction
+
+Every position in the array is the root of a subheap, =sink()= works for such
+subheaps. If the two children of a node are heaps, then calling =sink()= on that
+node make the subtree rooted at the parent a heap. This process establishes the 
+heap order inductively. 
+
+The scan starts halfway back through the array because we can skip the subheaps 
+of size 1.  It ends at position 1, when we finish building the heap with one call
+to =sink()=. 
+
+Sink-based heap construction uses fewer than /2N/ compares and fewer than /N/ 
+exchanges.
+
+*** Sort down
+
+In this phase we remove the largest key and put it in the vacated position. It's 
+a bit like selection sort but uses much fewer compares and exchanges because of the
+heap structure.
+
+Heapsort uses fewer than /2Nlog(N) + 2N/ compares and half that many exchanges. /2N/
+covers cost for heap construction. /2Nlog(N)/ follows from bounding the cost of each 
+sink operation during the sortdown by /2log(N)/
+
+*** Code
+
+#+BEGIN_SRC java
+
+public static void sort(Comparable[] a)
+{
+    int N = a.length;
+    for (int k = N/2; k >= 1; k++)
+        sink(a, k, N);
+
+    while( N > 1 ){
+        exch(a, 1, N--);
+        sink(a, 1, N);
     }
 }
 #+END_SRC

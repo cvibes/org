@@ -1,0 +1,275 @@
+#+TITLE: Trees and Hash Tables
+
+* Binary Search Tree
+
+** Definition
+
+A Binary Search Tree (=BST=) is a binary tree where each node has
+a =Comparable= key and satisifies the restriction that the key in
+any node is larger than the keys in all nodes in that node's left
+subtree and smaller than the keys in all nodes in that node's right
+subtree.
+
+** Basic Implementation
+
+*** Search
+
+The recursive algorithm naturally follows the recursive structure.
+If the root is null we have a search miss, if the key is equal to the
+key in root, we have a search hit. Otherwise we search recursively in
+the appropriate subtree. The simplicity that's similar to binary search
+is the essential feature of BST.
+
+*** Insert
+
+Insert is not much more difficult than search. A search for a key
+not in the tree ends at a null link, and we just need to replace that 
+link with a new node containing the key. 
+
+The code goes like this: if the (sub)tree is empty, we return a new node;
+if the search key is less than key in root, we set the left link to the 
+result of inserting the key into the left subtree; otherwise set the
+right link to the result of inserting into the right subtree.
+
+*** Recursion
+
+One can think of the code /before/ the recursive calls as happening on
+the way /down/ the tree: it compares the given key against the key at each 
+node and moves right or left accordingly. The code /after/ the recursive
+calls as happening on the way /up/ the tree. For =get()= it amounts to a
+series of =return= statements; but for =put()= it corresponds to resetting 
+the link of each parent to its child on the search path and to incrementing 
+the counts on the way up the path.
+
+We could just increment the node count on each node on the path, but we use
+more general code that sets each to one plus the sum of the counts in its 
+subtrees.
+
+*** Code for search/insert
+
+#+BEGIN_SRC java
+  public class BST<Key extends Comparable<Key>, Value>
+  {
+      private Node root;
+
+      private class Node
+      {
+          private Key key;          // key
+          private Value val;        // associated value
+          private Node left, right; // links to subtrees
+          private int N;            // # of nodes in subtree rooted here
+
+          public Node(Key key, Value val, int N)
+          {
+              this.key = key;
+              this.val = val;
+              this.N   = N;
+          }
+      }
+
+      public int size()
+      { return size(root); }
+
+      public int size(Node x)
+      {
+          if (x == null) return 0;
+          else           return x.N;
+      }
+
+      public Value get(Key key)
+      { return get(root, key); }
+
+      public Value get(Node x, Key key)
+      {   // Return value associated with key in the subtree rooted at x
+          // Return null if key not present in subtree rooted at x
+          if ( x == null ) return null;
+
+          int cmp = key.compareTo(x.key);
+          if      ( cmp < 0 ) return get(x.left,  key);
+          else if ( cmp > 0 ) return get(x.right, key);
+          else return x.val;
+      }
+
+      public void put(Key key, Value val)
+      { root = put(root, key, val); }
+
+      public void put(Node x, Key key, Value val)
+      {   // Change key's value to val if key in subtree rooted at x
+          // Otherwise, add new node to subtree associating key with val
+          if ( x == null ) return new Node(key, val, 1);
+
+          int cmp = key.compareTo(x.key);
+          if      ( cmp < 0 ) x.left  = put(x.left,  key, val);
+          else if ( cmp > 0 ) x.right = put(x.right, key, val);
+          else x.val = val;
+          x.N = size(x.left) + size(x.right) + 1;
+          return x;
+      }
+
+  }
+#+END_SRC
+
+
+** Order based methods
+
+*** Min/Max
+
+If the left link of the root is null, the smallest key in a BST is
+the key at the root; if the left link is not null, the smallest key
+in the BST is the smallest key in the left substre. This serves both
+as the description of the algorithm and an inductive proof that it
+finds the smallest key in the BST. 
+
+For =max()= we just look for larger key on the right path.
+
+*** Floor and ceiling
+
+If a given key is /less than/ the key at the root of a BST, then the
+floor /must/ be in the left subtree. If the key is /greater than/ the
+key at root, the floor /could/ be in the right subtree, but only if 
+there is a smaller or equal key; if not, then the key at the root is 
+the floor.
+
+Interchanging right and left, less and greater gives =ceiling()=
+
+[[./images/BST-floor.png]]
+
+*** Select and rank
+
+We use the number of nodes in the subtree recorded in nodes to find
+/n/-th key in BST, =rank()= is the inverse operation.
+
+To =select(n)= we compare =N= in left subtree, if it's equal, we return
+the key in root node; if it's less, we continue the search in left subtree;
+otherwise we search for =n - N - 1= in the right subtree.
+
+For =rank()=, if given key is equal to the key at root, we return size of
+left subtree; if it's less, we return rank of key in left subtree recursively;
+otherwise we return left subtree size plus one (to account for root) plus
+ rank in rank in right subtree.
+
+[[./images/BST-select.png]]
+
+*** Code for min/max/floor/select/rank
+
+#+BEGIN_SRC java
+  public Key min()
+  {  return min(root).key; }
+
+  publid Node min(Node x)
+  {
+      if ( x.left == null ) return x;
+      return min(x.left);
+  }
+
+  public Key floor(Key key)
+  {
+      Node x = floor(root, key);
+      if ( x == null ) return null;
+      return x.key;
+  }
+
+  public Node floor(Node x, Key key)
+  {
+      if ( x == null ) return null;
+      int cmp = key.compareTo(x.key);
+      if ( cmp == 0 ) return x;
+      if ( cmp < 0 ) return floor(x.left, key);
+      Node t = floor(x.right, key);
+      if ( t != null ) return t;
+      return x;
+  }
+
+  public Key select(int k)
+  {  return select(root, k).key; }
+
+  public Node select(Node x, int k)
+  {   // Return Node containing key of rank k
+      if (x == null) return null;
+      int t = size(x.left);
+      if      ( t > k ) return select(x.left, k);
+      else if ( t < k ) return select(x.right, k-t-1);
+      else              return x;
+  }
+
+  public int rank(Key key)
+  {   return rank(key, root); }
+
+  public int rank(Key key, Node x)
+  {   // Return number of keys less than x.key in the subtree rooted at x
+      if ( x == null ) return 0;
+      int cmp = key.compareTo(x.key);
+      if      (cmp < 0) return rank(key, x.left);
+      else if (cmp > 0) return 1 + size(x.left) + rank(key, x.right);
+      else              return size(x.left);
+  }
+#+END_SRC
+
+
+** Delete
+
+*** Delete the minimum/maximum
+
+For =deleteMin()= we go left until finding a =Node= that has a null left link
+and then replace the link to that node by its right link (simply by returning
+the right link in the recursive method). The deleted node, with no link pointing
+to it, will be garbage collected.
+
+[[./images/BST-delete-min.png]]
+
+
+*** Delete
+
+To delete a node =x= with two children, we repalce it with its /successor/. Because
+=x= has a right child, its successor is the =min()= of its right subtree. The
+replacement preserves order in the tree bevcause there are no keys between =x.key=
+and the successor's key.
+
+The replacing can be done in 4 steps:
+
+  1. Save the link to the node to be deleted in =t=
+  2. Set =x= to point to its successor =min(t.right)=
+  3. Set the right link of =x= (which is supposed to point to the BST containing all
+     keys larger than =x.key=) to =deleteMin(t.right)=
+  4. Set the left link of =x= (which was null) to =t.left= (all the keys that are less
+     than both the deleted key and its successor).
+
+
+[[./images/BST-delete.png]]
+
+
+*** Code
+
+#+BEGIN_SRC java
+  public void deleteMin()
+  {   root = deleteMin(root); }
+
+  private Node deleteMin(Node x)
+  {
+      if (x.left == null ) return x.right;
+      x.left = deleteMin(x.left);
+      x.N = size(x.left) + size(x.right) + 1;
+      return x;
+  }
+
+  public void delete(Key key)
+  {   root = delete(root, key); }
+
+  private Node delete(Node x, Key key)
+  {
+      if ( x == null ) return null;
+      int cmp = key.compareTo(x.key);
+      if      (cmp < 0) x.left  = delete(x.left,  key);
+      else if (cmp > 0) x.right = delete(x.right, key);
+      else {
+          if ( x.right == null ) return x.left;
+          if ( x.left  == null ) return x.right;
+          Node t = x;
+          x = min(t.right);
+          x.right = deleteMin(t.right);
+          x.left  = t.left;
+      }
+      x.N = size(x.left) + size(x.right) + 1;
+      return x;
+  }
+#+END_SRC

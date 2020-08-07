@@ -1,4 +1,5 @@
 #+TITLE: Algorithms
 
- -  [[file:basics.org][Basic Data Structures]]
- -  [[file:sort.org][Sorting]]
+ - [[file:basics.org][Basic Data Structures]]
+ - [[file:sort.org][Sorting]]
+ - [[file:tree.org][Trees and Hash Tables]]
